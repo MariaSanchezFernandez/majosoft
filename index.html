@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Majosoft · Estudio de desarrollo de software en Jaén</title>
+  <meta name="description" content="Majosoft — Estudio de desarrollo de software en Jaén. Diseñamos y construimos webs, plataformas y apps a medida: útiles, rápidas e intuitivas, de la idea a producción." />
+
+  <!-- Activa los estados ocultos de animación solo si hay JS (evita página en blanco si algo falla) -->
+  <script>document.documentElement.classList.add('js');</script>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#f5f4ec',
+            ink: '#15161a',
+            brand: '#15161a',
+            brand2: '#3a3a33',
+          },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        },
+      },
+    };
+  </script>
+
+  <!-- Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="bg-cream text-ink font-sans antialiased selection:bg-[#d6e022]/60">
+
+  <div class="scroll-progress" aria-hidden="true"></div>
+
+  <div class="bg-fx" aria-hidden="true">
+    <span class="glow glow-1"></span>
+    <span class="glow glow-2"></span>
+  </div>
+
+  <!-- NAV -->
+  <header class="site-header fixed top-0 inset-x-0 z-50">
+    <nav class="mx-auto max-w-[800px] px-5 mt-4">
+      <div class="nav-glass flex items-center justify-between rounded-full pl-5 pr-3 py-2.5">
+        <a href="#inicio" class="brand">
+          <span class="brand__mark">M</span>
+          <span class="brand__name">majosoft</span>
+        </a>
+        <ul class="hidden md:flex items-center gap-7 text-sm font-medium text-ink/65">
+          <li><a class="navlink" href="#servicios">Servicios</a></li>
+          <li><a class="navlink" href="#trabajos">Trabajos</a></li>
+          <li><a class="navlink" href="#proceso">Proceso</a></li>
+        </ul>
+        <a href="#contacto" class="btn-primary text-sm px-4 py-2">Hablemos</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section id="inicio" class="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden">
+      <div class="hero-wrap mx-auto px-5 w-full text-center">
+
+        <div class="reveal hero-eyebrow">
+          <span class="hero-eyebrow__rule"></span>
+          Estudio de software · Jaén, desde 2024
+          <span class="hero-eyebrow__rule"></span>
+        </div>
+
+        <h1 class="hero-title mt-7 font-black tracking-tight mx-auto">
+          <span class="line">Construimos software</span>
+          <span class="line">que la gente
+            <span class="accent">
+              disfruta usar
+              <svg class="hand-underline" viewBox="0 0 300 24" fill="none" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M4 16 C 70 6, 150 6, 296 12 C 210 11, 120 13, 8 20" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+              </svg>
+            </span>.
+          </span>
+        </h1>
+
+        <p class="reveal mt-8 mx-auto max-w-lg text-lg leading-relaxed text-ink/65">
+          Diseñamos y desarrollamos webs, plataformas y apps a medida.
+          Pocos proyectos a la vez, trato directo y código que envejece bien.
+        </p>
+
+        <div class="reveal mt-9 flex flex-wrap items-center justify-center gap-4">
+          <a href="#contacto" class="btn-primary">Cuéntanos tu idea</a>
+          <a href="#trabajos" class="btn-ghost">Ver trabajos →</a>
+        </div>
+      </div>
+
+      <a href="#servicios" class="scroll-cue" aria-label="Desplázate"><span></span></a>
+    </section>
+
+    <!-- MARQUEE -->
+    <section class="relative py-7 border-y border-ink/10">
+      <p class="text-center text-[11px] uppercase tracking-[0.3em] text-ink/40 mb-5">Trabajamos con</p>
+      <div class="marquee">
+        <div class="marquee__track">
+          <span>Laravel</span><span aria-hidden="true">·</span><span>JavaScript</span><span aria-hidden="true">·</span>
+          <span>Swift</span><span aria-hidden="true">·</span><span>PHP</span><span aria-hidden="true">·</span>
+          <span>SQL</span><span aria-hidden="true">·</span><span>Unity</span><span aria-hidden="true">·</span>
+          <span>Figma</span><span aria-hidden="true">·</span><span>Bootstrap</span><span aria-hidden="true">·</span>
+          <span>HTML5</span><span aria-hidden="true">·</span><span>CSS3</span><span aria-hidden="true">·</span>
+          <span>Laravel</span><span aria-hidden="true">·</span><span>JavaScript</span><span aria-hidden="true">·</span>
+          <span>Swift</span><span aria-hidden="true">·</span><span>PHP</span><span aria-hidden="true">·</span>
+          <span>SQL</span><span aria-hidden="true">·</span><span>Unity</span><span aria-hidden="true">·</span>
+          <span>Figma</span><span aria-hidden="true">·</span><span>Bootstrap</span><span aria-hidden="true">·</span>
+          <span>HTML5</span><span aria-hidden="true">·</span><span>CSS3</span><span aria-hidden="true">·</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICIOS -->
+    <section id="servicios" class="relative py-28">
+      <div class="mx-auto max-w-6xl px-5">
+        <header class="reveal-head flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
+          <div>
+            <p class="eyebrow">[ 01 ] Servicios</p>
+            <h2 class="section-title max-w-xl">Qué hacemos</h2>
+          </div>
+          <p class="md:text-right md:max-w-xs text-ink/55">Pocas cosas, pero bien hechas. De principio a fin.</p>
+        </header>
+
+        <div class="grid gap-px bg-ink/10 rounded-3xl overflow-hidden border border-ink/10">
+          <article class="reveal svc">
+            <span class="svc__idx">01</span>
+            <div class="svc__main">
+              <h3 class="svc__title">Desarrollo web</h3>
+              <p class="svc__text">Webs y plataformas a medida con Laravel y JavaScript. Rápidas, seguras y fáciles de mantener.</p>
+              <div class="svc__tags"><span>Laravel</span><span>APIs</span><span>Pasarelas de pago</span><span>Paneles a medida</span></div>
+            </div>
+            <span class="svc__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </span>
+          </article>
+
+          <article class="reveal svc">
+            <span class="svc__idx">02</span>
+            <div class="svc__main">
+              <h3 class="svc__title">Apps móviles & 3D</h3>
+              <p class="svc__text">Aplicaciones nativas para iOS con Swift y experiencias 3D interactivas con Unity.</p>
+              <div class="svc__tags"><span>Swift</span><span>iOS</span><span>Unity</span><span>Gamificación</span></div>
+            </div>
+            <span class="svc__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2.5"/><line x1="10.5" y1="18" x2="13.5" y2="18"/></svg>
+            </span>
+          </article>
+
+          <article class="reveal svc">
+            <span class="svc__idx">03</span>
+            <div class="svc__main">
+              <h3 class="svc__title">Diseño UX/UI</h3>
+              <p class="svc__text">Interfaces pensadas para las personas. Prototipado en Figma y foco en la usabilidad real.</p>
+              <div class="svc__tags"><span>Figma</span><span>Prototipado</span><span>Design systems</span><span>Accesibilidad</span></div>
+            </div>
+            <span class="svc__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+            </span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRABAJOS -->
+    <section id="trabajos" class="relative py-28">
+      <div class="mx-auto max-w-6xl px-5">
+        <header class="reveal-head flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
+          <div>
+            <p class="eyebrow">[ 02 ] Trabajos</p>
+            <h2 class="section-title">Nuestras webs y proyectos</h2>
+          </div>
+          <p class="md:text-right md:max-w-xs text-ink/55">Una muestra de lo que hemos puesto en marcha.</p>
+        </header>
+
+        <div class="grid gap-5 md:grid-cols-2">
+          <!-- Cursos Umme (destacado) -->
+          <a href="https://cursosumme.es" target="_blank" rel="noopener" class="reveal project project--feature md:col-span-2">
+            <span class="bento-tag">Plataforma web · En producción</span>
+            <h3 class="project__title">Cursos Umme</h3>
+            <p class="project__text">Formación online para oposiciones de Pedagogía Terapéutica: vídeo bajo demanda, materiales descargables y pagos. Construida para escalar y fácil de mantener.</p>
+            <span class="project__link">Visitar sitio ↗</span>
+          </a>
+
+          <!-- OlivaTour -->
+          <div class="reveal project spotlight">
+            <span class="bento-tag">App iOS · Turismo gamificado</span>
+            <h3 class="project__title">OlivaTour</h3>
+            <p class="project__text">Descubre la provincia de Jaén jugando, con rutas y retos por sus pueblos.</p>
+          </div>
+
+          <!-- ConViVir -->
+          <div class="reveal project spotlight">
+            <span class="bento-tag">Plataforma · Impacto social</span>
+            <h3 class="project__title">ConViVir</h3>
+            <p class="project__text">Herramienta digital para prevenir y combatir el acoso escolar.</p>
+          </div>
+
+          <!-- NeuroEquus -->
+          <div class="reveal project spotlight md:col-span-2">
+            <span class="bento-tag">Unity · 3D interactivo</span>
+            <h3 class="project__title">NeuroEquus</h3>
+            <p class="project__text">Entrenamiento anatómico 3D para un aprendizaje inmersivo, desarrollado con Unity.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CÓMO TRABAJAMOS -->
+    <section id="proceso" class="relative py-28">
+      <div class="mx-auto max-w-6xl px-5">
+        <header class="reveal-head mb-16">
+          <p class="eyebrow">[ 03 ] Cómo trabajamos</p>
+          <h2 class="section-title">Un proceso claro, sin sorpresas</h2>
+        </header>
+
+        <div class="process">
+          <span class="process__line"><span class="process__progress"></span></span>
+          <div class="process__steps grid gap-12 md:grid-cols-4">
+            <div class="reveal step"><span class="step__num">01</span><h3 class="step__title">Escuchamos</h3><p class="step__text">Entendemos tu idea, tus usuarios y qué problema hay que resolver de verdad.</p></div>
+            <div class="reveal step"><span class="step__num">02</span><h3 class="step__title">Diseñamos</h3><p class="step__text">Prototipamos la experiencia en Figma antes de escribir una sola línea.</p></div>
+            <div class="reveal step"><span class="step__num">03</span><h3 class="step__title">Construimos</h3><p class="step__text">Desarrollamos con buenas prácticas, código limpio y entregas frecuentes.</p></div>
+            <div class="reveal step"><span class="step__num">04</span><h3 class="step__title">Lanzamos</h3><p class="step__text">Ponemos en producción y seguimos a tu lado para mejorar y escalar.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EQUIPO / PATÁN -->
+    <section id="equipo" class="relative py-24">
+      <div class="mx-auto max-w-6xl px-5">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+          <div class="patan-stage reveal">
+            <span class="patan-blob"></span>
+            <div class="patan-frame">
+              <img src="assets/patan.jpg" alt="Patán, la mascota de Majosoft" />
+            </div>
+            <span class="patan-badge">★ Empleado del mes</span>
+          </div>
+          <div class="reveal">
+            <p class="eyebrow">El equipo</p>
+            <h2 class="section-title">Y Patán, nuestro ayudante especial</h2>
+            <p class="mt-5 text-ink/60 max-w-md">
+              Ningún proyecto sale del estudio sin su aprobación. Se encarga de subir la moral,
+              supervisar las siestas y recordarnos que, de vez en cuando, toca levantarse de la silla.
+            </p>
+            <ul class="patan-tags mt-7">
+              <li>Jefe de motivación</li>
+              <li>Catador de siestas</li>
+              <li>Guardián del estudio</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACTO -->
+    <section id="contacto" class="relative py-28">
+      <div class="mx-auto max-w-3xl px-5">
+        <header class="reveal-head text-center mb-12">
+          <p class="eyebrow justify-center">[ 05 ] Contacto</p>
+          <h2 class="text-4xl sm:text-5xl font-black tracking-tight">¿Tienes una idea? <span class="accent">Hagámosla realidad.</span></h2>
+          <p class="reveal mt-5 text-ink/60 max-w-xl mx-auto">Cuéntanos qué necesitas y te respondemos lo antes posible. Sin compromiso.</p>
+        </header>
+
+        <form id="contact-form" class="reveal panel p-6 md:p-9 grid gap-5" novalidate>
+          <div class="grid gap-5 sm:grid-cols-2">
+            <label class="field"><span class="field__label">Nombre</span><input class="field__input" type="text" name="nombre" placeholder="Tu nombre" required /></label>
+            <label class="field"><span class="field__label">Email</span><input class="field__input" type="email" name="email" placeholder="tu@email.com" required /></label>
+          </div>
+          <label class="field"><span class="field__label">¿En qué podemos ayudarte?</span><textarea class="field__input" name="mensaje" rows="4" placeholder="Cuéntanos brevemente tu proyecto..." required></textarea></label>
+          <div class="flex flex-wrap items-center gap-4">
+            <button type="submit" class="btn-primary">Enviar mensaje</button>
+            <output id="form-status" class="text-sm text-ink/55"></output>
+          </div>
+          <p class="text-xs text-ink/40">También puedes escribirnos a <a class="underline hover:text-brand" href="mailto:dev@majosoft.es">dev@majosoft.es</a></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-ink/10 py-10">
+    <div class="mx-auto max-w-6xl px-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-ink/45">
+      <span class="font-extrabold text-ink/70">majo<span class="text-brand">soft</span></span>
+      <span>© 2026 Majosoft · Jaén, España · majosoft.es</span>
+      <div class="flex gap-5">
+        <a class="hover:text-ink transition" href="https://github.com/jmBorrasRodriguez" target="_blank" rel="noopener">GitHub</a>
+        <a class="hover:text-ink transition" href="mailto:dev@majosoft.es">Email</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

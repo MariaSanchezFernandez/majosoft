@@ -1,0 +1,4 @@
+# Editor / agente
+.vscode/
+.claude/
+.DS_Store
