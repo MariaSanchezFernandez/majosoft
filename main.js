@@ -184,9 +184,9 @@ if (form) {
       form.reset();
     };
 
-    // 👉 Pega tu Access Key gratuita de https://web3forms.com para recibir los
-    //    envíos directamente en dev@majosoft.es. Si se deja vacía, usa mailto.
-    const WEB3FORMS_KEY = '';
+    // Access Key pública de Web3Forms (no es un secreto: va ligada al email de
+    // destino y el spam se filtra con el honeypot). Si se vacía, usa mailto.
+    const WEB3FORMS_KEY = '2d43980a-87f0-4dca-9fb1-a1a9aeb0b9e3';
     if (!WEB3FORMS_KEY) { enviarPorCorreo(); return; }
 
     const btn = form.querySelector('button[type="submit"]');
