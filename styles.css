@@ -208,7 +208,8 @@ body { overflow-x: hidden; cursor: none; background: #f5f4ec; }
 .project__title { font-size: 1.6rem; font-weight: 800; letter-spacing: -.02em; margin-top: .5rem; }
 .project__text { color: rgba(21,22,26,.6); line-height: 1.6; margin-top: .5rem; }
 .project--feature .project__text { color: rgba(245,244,236,.8); }
-.project__link { display: inline-block; margin-top: 1rem; font-weight: 700; color: #d6e022; }
+.project__link { display: inline-block; margin-top: 1rem; font-weight: 700; color: #15161a; }
+.project--feature .project__link { color: #d6e022; }
 .bento-tag { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: #15161a; font-weight: 700; }
 .project--feature .bento-tag { color: #d6e022; }
 
