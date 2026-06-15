@@ -8,6 +8,10 @@ if (typeof gsap === 'undefined') {
 
 gsap.registerPlugin(ScrollTrigger);
 
+/* Recalcula posiciones cuando todo ha cargado (evita que el hero se quede
+   atascado en transparente al volver arriba si la altura cambió) */
+window.addEventListener('load', () => ScrollTrigger.refresh());
+
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const canHover = window.matchMedia('(hover: hover)').matches;
 
@@ -70,7 +74,7 @@ window.addEventListener('DOMContentLoaded', () => {
     /* Hero: parallax + fundido al hacer scroll */
     gsap.to('.hero-wrap', {
       y: 70, opacity: 0.12, ease: 'none',
-      scrollTrigger: { trigger: '#inicio', start: 'top top', end: 'bottom top', scrub: true },
+      scrollTrigger: { trigger: '#inicio', start: 'top top', end: 'bottom top', scrub: true, invalidateOnRefresh: true },
     });
 
     /* Glows con parallax */
