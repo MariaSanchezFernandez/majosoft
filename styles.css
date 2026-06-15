@@ -315,9 +315,7 @@ body { overflow-x: hidden; cursor: none; background: #f5f4ec; }
   .band-dark__item { padding-left: 2.25rem; border-left: 1px solid rgba(245,244,236,.14); }
   .band-dark__item:first-child { padding-left: 0; border-left: none; }
 }
-.band-dark__icon { display: inline-grid; place-items: center; color: #d6e022; margin-bottom: .9rem; }
-.band-dark__icon svg { width: 34px; height: 34px; }
-.band-dark__item h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: .5rem; }
+.band-dark__item h3 { font-size: 1.15rem; font-weight: 800; margin-bottom: .6rem; }
 .band-dark__item h3 b { color: #d6e022; font-weight: 800; }
 .band-dark__item p { color: rgba(245,244,236,.7); line-height: 1.6; }
 
