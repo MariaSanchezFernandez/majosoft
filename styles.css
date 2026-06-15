@@ -31,13 +31,14 @@ body { overflow-x: hidden; cursor: none; background: #f5f4ec; }
 .cursor-dot, .cursor-ring {
   position: fixed; top: 0; left: 0; z-index: 100; pointer-events: none;
   border-radius: 50%; transform: translate(-50%, -50%);
+  mix-blend-mode: difference; /* visible sobre fondo claro y oscuro */
 }
-.cursor-dot { width: 6px; height: 6px; background: #15161a; }
+.cursor-dot { width: 6px; height: 6px; background: #fff; }
 .cursor-ring {
-  width: 34px; height: 34px; border: 1.5px solid rgba(21,22,26,.5);
+  width: 34px; height: 34px; border: 1.5px solid rgba(255,255,255,.7);
   transition: width .25s, height .25s, background .25s, border-color .25s;
 }
-.cursor-ring.is-hover { width: 56px; height: 56px; background: rgba(21,22,26,.1); border-color: transparent; }
+.cursor-ring.is-hover { width: 56px; height: 56px; background: rgba(255,255,255,.25); border-color: transparent; }
 
 /* ===== Header (píldora flotante, 800px, centrada) ===== */
 .nav-glass {
