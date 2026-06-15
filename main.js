@@ -161,7 +161,7 @@ if (canHover && !reduceMotion) {
 /* ---------- Formulario de contacto ---------- */
 const form = document.getElementById('contact-form');
 if (form) {
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const status = document.getElementById('form-status');
     const data = new FormData(form);
@@ -171,17 +171,54 @@ if (form) {
 
     if (!nombre || !email || !mensaje) {
       status.textContent = 'Por favor, completa todos los campos.';
-      gsap.fromTo(form, { x: -6 }, { x: 0, duration: 0.4, ease: 'elastic.out(1,0.3)' });
+      if (window.gsap) gsap.fromTo(form, { x: -6 }, { x: 0, duration: 0.4, ease: 'elastic.out(1,0.3)' });
       return;
     }
 
-    // Sin backend: abrimos el cliente de correo con el mensaje preparado.
-    // Para recibir los envíos directamente, cambia esto por Formspree/Getform.
-    const asunto = encodeURIComponent(`Nuevo proyecto · ${nombre}`);
-    const cuerpo = encodeURIComponent(`Nombre: ${nombre}\nEmail: ${email}\n\n${mensaje}`);
-    window.location.href = `mailto:dev@majosoft.es?subject=${asunto}&body=${cuerpo}`;
-    status.textContent = '¡Gracias! Abriendo tu cliente de correo…';
-    form.reset();
+    // Respaldo: abre el cliente de correo con el mensaje preparado.
+    const enviarPorCorreo = () => {
+      const asunto = encodeURIComponent(`Nuevo proyecto · ${nombre}`);
+      const cuerpo = encodeURIComponent(`Nombre: ${nombre}\nEmail: ${email}\n\n${mensaje}`);
+      window.location.href = `mailto:dev@majosoft.es?subject=${asunto}&body=${cuerpo}`;
+      status.textContent = '¡Gracias! Abriendo tu cliente de correo…';
+      form.reset();
+    };
+
+    // 👉 Pega tu Access Key gratuita de https://web3forms.com para recibir los
+    //    envíos directamente en dev@majosoft.es. Si se deja vacía, usa mailto.
+    const WEB3FORMS_KEY = '';
+    if (!WEB3FORMS_KEY) { enviarPorCorreo(); return; }
+
+    const btn = form.querySelector('button[type="submit"]');
+    status.textContent = 'Enviando…';
+    if (btn) btn.disabled = true;
+
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          subject: `Nuevo proyecto · ${nombre}`,
+          from_name: 'Web Majosoft',
+          nombre, email, mensaje,
+          botcheck: data.get('botcheck') ? true : false,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        status.textContent = '¡Gracias! Hemos recibido tu mensaje, te respondemos pronto.';
+        form.reset();
+      } else {
+        status.textContent = 'No se pudo enviar. Abrimos tu correo como alternativa…';
+        enviarPorCorreo();
+      }
+    } catch (err) {
+      status.textContent = 'Sin conexión. Abrimos tu correo como alternativa…';
+      enviarPorCorreo();
+    } finally {
+      if (btn) btn.disabled = false;
+    }
   });
 }
 

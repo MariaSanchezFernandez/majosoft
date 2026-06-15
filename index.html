@@ -6,10 +6,51 @@
   <title>Majosoft · Estudio de desarrollo de software en Jaén</title>
   <meta name="description" content="Majosoft — Estudio de desarrollo de software en Jaén. Diseñamos y construimos webs, plataformas y apps a medida: útiles, rápidas e intuitivas, de la idea a producción." />
 
+  <link rel="canonical" href="https://majosoft.es/" />
+  <meta name="theme-color" content="#15161a" />
+
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
   <link rel="icon" type="image/png" href="assets/favicon.png" />
   <link rel="apple-touch-icon" href="assets/favicon.png" />
+
+  <!-- Open Graph / redes sociales -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Majosoft" />
+  <meta property="og:title" content="Majosoft · Estudio de software en Jaén" />
+  <meta property="og:description" content="Diseñamos y desarrollamos webs, plataformas y apps a medida. Software que hace crecer tu negocio, desde Jaén." />
+  <meta property="og:url" content="https://majosoft.es/" />
+  <meta property="og:image" content="https://majosoft.es/assets/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="es_ES" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Majosoft · Estudio de software en Jaén" />
+  <meta name="twitter:description" content="Webs, plataformas y apps a medida. Software que hace crecer tu negocio, desde Jaén." />
+  <meta name="twitter:image" content="https://majosoft.es/assets/og-image.png" />
+
+  <!-- SEO local: datos estructurados -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    "name": "Majosoft",
+    "description": "Estudio de desarrollo de software en Jaén. Webs, plataformas y apps a medida.",
+    "url": "https://majosoft.es/",
+    "logo": "https://majosoft.es/assets/favicon.png",
+    "image": "https://majosoft.es/assets/og-image.png",
+    "email": "dev@majosoft.es",
+    "areaServed": "España",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Jaén",
+      "addressRegion": "Jaén",
+      "addressCountry": "ES"
+    },
+    "knowsAbout": ["Desarrollo web", "Aplicaciones móviles", "Diseño UX/UI", "Laravel", "Swift", "Unity", "JavaScript"],
+    "sameAs": ["https://github.com/jmBorrasRodriguez"]
+  }
+  </script>
 
   <!-- Activa los estados ocultos de animación solo si hay JS (evita página en blanco si algo falla) -->
   <script>document.documentElement.classList.add('js');</script>
@@ -309,9 +350,11 @@
             <label class="field"><span class="field__label">Email</span><input class="field__input" type="email" name="email" placeholder="tu@email.com" required /></label>
           </div>
           <label class="field"><span class="field__label">¿En qué podemos ayudarte?</span><textarea class="field__input" name="mensaje" rows="4" placeholder="Cuéntanos brevemente tu proyecto..." required></textarea></label>
+          <!-- Honeypot anti-spam: oculto para humanos, los bots lo rellenan -->
+          <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true" />
           <div class="flex flex-wrap items-center gap-4">
             <button type="submit" class="btn-primary">Enviar mensaje</button>
-            <output id="form-status" class="text-sm text-ink/55"></output>
+            <output id="form-status" class="text-sm text-ink/55" role="status" aria-live="polite"></output>
           </div>
           <p class="text-xs text-ink/40">También puedes escribirnos a <a class="underline hover:text-brand" href="mailto:dev@majosoft.es">dev@majosoft.es</a></p>
         </form>
