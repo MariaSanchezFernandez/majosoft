@@ -164,6 +164,13 @@ if (canHover && !reduceMotion) {
 
 /* ---------- Formulario de contacto ---------- */
 const form = document.getElementById('contact-form');
+const formSuccess = document.getElementById('form-success');
+function mostrarExito() {
+  if (!formSuccess) return;
+  form.style.display = 'none';
+  formSuccess.classList.add('is-visible');
+  formSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 if (form) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -211,8 +218,9 @@ if (form) {
       });
       const json = await res.json();
       if (json.success) {
-        status.textContent = '¡Gracias! Hemos recibido tu mensaje, te respondemos pronto.';
+        status.textContent = '';
         form.reset();
+        mostrarExito();
       } else {
         status.textContent = 'No se pudo enviar. Abrimos tu correo como alternativa…';
         enviarPorCorreo();
