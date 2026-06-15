@@ -54,10 +54,9 @@ body { overflow-x: hidden; cursor: none; background: #f5f4ec; }
 
 .brand { display: inline-flex; align-items: center; gap: .6rem; }
 .brand__mark {
-  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px;
-  font-weight: 900; font-size: 1rem; color: #15161a; letter-spacing: -.04em;
-  background: #d6e022;
+  display: grid; place-items: center; height: 30px;
 }
+.brand__mark img { height: 100%; width: auto; display: block; }
 .brand__name { font-weight: 800; letter-spacing: -.02em; font-size: 1.05rem; color: #15161a; }
 
 .navlink { position: relative; transition: color .25s; }
@@ -248,12 +247,62 @@ body { overflow-x: hidden; cursor: none; background: #f5f4ec; }
 
 /* ===== Proceso ===== */
 .process { position: relative; }
-.process__line { position: absolute; left: 0; right: 0; top: 17px; height: 2px; background: rgba(21,22,26,.12); display: none; }
-@media (min-width: 768px) { .process__line { display: block; } }
-.process__progress { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #d6e022, #aebb0c); }
-.step__num { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 9999px; font-size: .82rem; font-weight: 800; color: #15161a; background: #f5f4ec; border: 2px solid #15161a; margin-bottom: 1.1rem; }
-.step__title { font-size: 1.25rem; font-weight: 700; margin-bottom: .45rem; }
-.step__text { color: rgba(21,22,26,.58); line-height: 1.55; font-size: .95rem; }
+.process__line { display: none; }
+
+/* --- Móvil: tarjetas apiladas tipo deck --- */
+.process__steps { display: flex; flex-direction: column; gap: 1.5rem; max-width: 680px; margin: 0 auto; }
+.step {
+  position: sticky;
+  display: grid; grid-template-columns: auto 1fr; column-gap: 1.35rem; align-items: start;
+  width: 100%; max-width: 100%; box-sizing: border-box;
+  background: #fbfbf6; border: 1px solid rgba(21,22,26,.1); border-radius: 1.5rem;
+  padding: 2.1rem 2rem; overflow: hidden; min-height: 168px;
+  box-shadow: 0 20px 44px -28px rgba(21,22,26,.5);
+  transition: border-color .35s, box-shadow .35s;
+}
+.step > * { position: relative; z-index: 1; min-width: 0; }
+.step__title, .step__text { overflow-wrap: anywhere; }
+.step:nth-child(1) { top: 100px; }
+.step:nth-child(2) { top: 120px; }
+.step:nth-child(3) { top: 140px; }
+.step:nth-child(4) { top: 160px; }
+.step:hover { border-color: rgba(21,22,26,.3); }
+.step__icon {
+  grid-row: 1 / span 2; align-self: start;
+  display: grid; place-items: center; width: 54px; height: 54px; border-radius: 15px;
+  color: #15161a; background: rgba(214,224,34,.22); border: 1px solid rgba(214,224,34,.65);
+}
+.step__icon svg { width: 27px; height: 27px; }
+.step__num {
+  position: absolute; top: 1.5rem; right: 1.6rem; z-index: 2;
+  display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 9999px;
+  font-size: .8rem; font-weight: 800; color: #15161a; background: #f5f4ec; border: 2px solid #15161a;
+}
+.step__title { font-size: 1.35rem; font-weight: 800; letter-spacing: -.01em; margin: .15rem 0 .5rem; padding-right: 2.6rem; }
+.step__text { color: rgba(21,22,26,.6); line-height: 1.6; max-width: 58ch; }
+@media (max-width: 480px) {
+  .step { padding: 1.7rem 1.5rem; column-gap: 1.1rem; }
+  .step__icon { width: 48px; height: 48px; }
+  .step__title { font-size: 1.2rem; }
+}
+
+/* --- Escritorio: fila de 4 con línea/timeline --- */
+@media (min-width: 768px) {
+  .process__line { display: block; position: absolute; top: 26px; left: 11%; right: 11%; height: 2px; background: rgba(21,22,26,.14); z-index: 0; }
+  .process__progress { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #d6e022, #aebb0c); }
+  .process__steps { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5rem; max-width: none; margin: 0; }
+  .step {
+    position: static; display: block; text-align: center;
+    background: transparent; border: none; border-radius: 0; box-shadow: none;
+    padding: 0; min-height: 0; overflow: visible;
+  }
+  .step:hover { border-color: transparent; }
+  .step::after { display: none; }
+  .step__num { position: static; margin: 0 auto 1.5rem; }
+  .step__icon { margin: 0 auto 1.1rem; }
+  .step__title { padding-right: 0; font-size: 1.25rem; }
+  .step__text { max-width: 26ch; margin: 0 auto; font-size: .95rem; }
+}
 
 /* ===== Stats ===== */
 .stat { display: flex; flex-direction: column; gap: .3rem; padding: 1.6rem; background: #fbfbf6; }
