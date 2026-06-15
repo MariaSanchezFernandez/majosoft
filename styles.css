@@ -301,7 +301,7 @@ body { overflow-x: hidden; cursor: none; background: #f5f4ec; }
   .step__num { position: static; margin: 0 auto 1.5rem; }
   .step__icon { margin: 0 auto 1.1rem; }
   .step__title { padding-right: 0; font-size: 1.25rem; }
-  .step__text { max-width: 26ch; margin: 0 auto; font-size: .95rem; }
+  .step__text { max-width: 32ch; margin: 0 auto; font-size: .95rem; }
 }
 
 /* ===== Banda oscura (ritmo / valores) ===== */
@@ -310,18 +310,13 @@ body { overflow-x: hidden; cursor: none; background: #f5f4ec; }
 .band-dark > * { position: relative; z-index: 1; }
 .band-dark__eyebrow { color: #d6e022; font-size: .78rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
 .band-dark__title { font-size: clamp(1.9rem, 4vw, 2.9rem); font-weight: 900; letter-spacing: -.03em; margin: .7rem 0 1.2rem; }
-.band-dark__item {
-  text-align: left; padding: 1.75rem;
-  background: rgba(245,244,236,.04); border: 1px solid rgba(245,244,236,.12); border-radius: 1.25rem;
-  transition: transform .35s cubic-bezier(.2,.7,.3,1), border-color .35s, background .35s;
+.band-dark__item { text-align: left; }
+@media (min-width: 768px) {
+  .band-dark__item { padding-left: 2.25rem; border-left: 1px solid rgba(245,244,236,.14); }
+  .band-dark__item:first-child { padding-left: 0; border-left: none; }
 }
-.band-dark__item:hover { transform: translateY(-4px); border-color: rgba(214,224,34,.45); background: rgba(245,244,236,.06); }
-.band-dark__icon {
-  display: grid; place-items: center; width: 50px; height: 50px; border-radius: 14px;
-  color: #d6e022; background: rgba(214,224,34,.14); border: 1px solid rgba(214,224,34,.5);
-  margin-bottom: 1.1rem;
-}
-.band-dark__icon svg { width: 26px; height: 26px; }
+.band-dark__icon { display: inline-grid; place-items: center; color: #d6e022; margin-bottom: .9rem; }
+.band-dark__icon svg { width: 34px; height: 34px; }
 .band-dark__item h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: .5rem; }
 .band-dark__item h3 b { color: #d6e022; font-weight: 800; }
 .band-dark__item p { color: rgba(245,244,236,.7); line-height: 1.6; }
