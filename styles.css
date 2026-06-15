@@ -306,6 +306,12 @@ body { overflow-x: hidden; cursor: none; background: #f5f4ec; }
   .step__text { max-width: 32ch; margin: 0 auto; font-size: .95rem; }
 }
 
+/* ===== Lista de características (páginas de proyecto) ===== */
+.feature-list { list-style: none; display: grid; gap: .75rem; margin: 1rem 0 0; padding: 0; }
+.feature-list li { position: relative; padding-left: 1.7rem; line-height: 1.6; }
+.feature-list li::before { content: "→"; position: absolute; left: 0; top: 0; color: #15161a; font-weight: 800; }
+.feature-list b { color: #15161a; font-weight: 700; }
+
 /* ===== Banda oscura (ritmo / valores) ===== */
 .band-dark { position: relative; overflow: hidden; background: #15161a; color: #f5f4ec; }
 .band-dark::before { content: ""; position: absolute; inset: 0; background: radial-gradient(620px circle at 82% 8%, rgba(214,224,34,.18), transparent 55%); }
