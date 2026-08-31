@@ -2,3 +2,6 @@
 .vscode/
 .claude/
 .DS_Store
+
+# Dependencias
+node_modules/

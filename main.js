@@ -74,7 +74,7 @@ window.addEventListener('DOMContentLoaded', () => {
     /* Hero: parallax + fundido al hacer scroll */
     gsap.to('.hero-wrap', {
       y: 70, opacity: 0.12, ease: 'none',
-      scrollTrigger: { trigger: '#inicio', start: 'top top', end: 'bottom top', scrub: true, invalidateOnRefresh: true },
+      scrollTrigger: { trigger: '#inicio', start: 'top top', end: 'bottom top', scrub: 0.6, invalidateOnRefresh: true },
     });
 
     /* Glows con parallax */
@@ -85,7 +85,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const progress = document.querySelector('.process__progress');
     if (progress) {
       gsap.to(progress, { width: '100%', ease: 'none',
-        scrollTrigger: { trigger: '.process', start: 'top 68%', end: 'bottom 72%', scrub: true } });
+        scrollTrigger: { trigger: '.process', start: 'top 68%', end: 'bottom 72%', scrub: 0.6 } });
     }
 
     /* Resaltado del nº de paso según avanza el scroll */
@@ -171,6 +171,10 @@ function mostrarExito() {
   formSuccess.classList.add('is-visible');
   formSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
+// Vista previa del estado de éxito: añade ?exito a la URL
+if (form && /[?&]exito\b/.test(window.location.search)) {
+  mostrarExito();
+}
 if (form) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -235,3 +239,21 @@ if (form) {
 }
 
 } // fin del else (GSAP disponible)
+
+/* ---------- Menú móvil (independiente de GSAP) ---------- */
+const navToggle = document.getElementById('nav-toggle');
+const mobileMenu = document.getElementById('mobile-menu');
+if (navToggle && mobileMenu) {
+  const closeMenu = () => {
+    navToggle.classList.remove('is-open');
+    mobileMenu.classList.remove('is-open');
+    navToggle.setAttribute('aria-expanded', 'false');
+  };
+  navToggle.addEventListener('click', () => {
+    const open = mobileMenu.classList.toggle('is-open');
+    navToggle.classList.toggle('is-open', open);
+    navToggle.setAttribute('aria-expanded', String(open));
+  });
+  mobileMenu.querySelectorAll('a').forEach((a) => a.addEventListener('click', closeMenu));
+  window.addEventListener('resize', () => { if (window.innerWidth >= 768) closeMenu(); });
+}
