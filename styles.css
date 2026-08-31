@@ -233,14 +233,6 @@ body { overflow-x: hidden; cursor: none; background: #f5f4ec; }
 .bento-tag { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: #15161a; font-weight: 700; }
 .project--feature .bento-tag { color: #d6e022; }
 
-.project__shot {
-  width: 100%; height: auto; display: block; margin-top: .25rem;
-  border-radius: 1rem; border: 1px solid rgba(245,244,236,.14);
-  box-shadow: 0 30px 60px -28px rgba(0,0,0,.6);
-  transition: transform .5s var(--ease-smooth), box-shadow .5s var(--ease-smooth);
-}
-.project--feature:hover .project__shot { transform: translateY(-3px) scale(1.01); box-shadow: 0 36px 70px -26px rgba(0,0,0,.65); }
-
 .project__media .window--sm { transform: rotate(-1.5deg); transition: transform .5s var(--ease-smooth); }
 .project--feature:hover .window--sm { transform: rotate(0deg); }
 .window--sm .window__body { min-height: 150px; display: block; padding: 16px; }
