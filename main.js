@@ -57,10 +57,24 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     /* Reveal por scroll genérico */
+    const grupos = '.svc, .project, .band-dark__item';
     gsap.utils.toArray('.reveal').forEach((el) => {
-      if (el.closest('#inicio')) return;
+      if (el.closest('#inicio') || el.matches(grupos)) return;
       gsap.to(el, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
         scrollTrigger: { trigger: el, start: 'top 88%' } });
+    });
+
+    /* Tarjetas en rejilla: entran juntas y escalonadas, con un punto de escala */
+    grupos.split(', ').forEach((sel) => {
+      const items = gsap.utils.toArray(sel);
+      if (!items.length) return;
+      gsap.set(items, { opacity: 0, y: 26, scale: 0.96 });
+      ScrollTrigger.batch(items, {
+        start: 'top 88%',
+        onEnter: (batch) => gsap.to(batch, {
+          opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'power3.out', stagger: 0.12,
+        }),
+      });
     });
 
     /* Subrayado dibujado a mano del hero */
@@ -81,20 +95,75 @@ window.addEventListener('DOMContentLoaded', () => {
     gsap.to('.glow-1', { yPercent: 35, scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 1 } });
     gsap.to('.glow-2', { yPercent: -30, scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 1.3 } });
 
-    /* Línea de proceso ligada al scroll */
-    const progress = document.querySelector('.process__progress');
-    if (progress) {
-      gsap.to(progress, { width: '100%', ease: 'none',
-        scrollTrigger: { trigger: '.process', start: 'top 68%', end: 'bottom 72%', scrub: 0.6 } });
-    }
+    /* Glows: deriva lenta también en reposo, sin depender del scroll */
+    gsap.to('.glow-1', { x: 36, y: 24, duration: 9, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+    gsap.to('.glow-2', { x: -30, y: -26, duration: 11, ease: 'sine.inOut', yoyo: true, repeat: -1 });
 
-    /* Resaltado del nº de paso según avanza el scroll */
-    gsap.utils.toArray('.step').forEach((step) => {
-      const num = step.querySelector('.step__num');
-      ScrollTrigger.create({
-        trigger: step, start: 'top 65%', end: 'bottom 35%',
-        onEnter: () => gsap.to(num, { backgroundColor: '#d6e022', borderColor: '#d6e022', color: '#15161a', duration: 0.4 }),
-        onLeaveBack: () => gsap.to(num, { backgroundColor: '#f5f4ec', borderColor: '#15161a', color: '#15161a', duration: 0.4 }),
+    /* Patán flota suavemente */
+    gsap.to('.patan-frame', { y: -10, rotate: 1.2, duration: 3.2, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+
+    /* Proceso: en escritorio se recorre en horizontal; en móvil sigue el deck vertical */
+    const activo = { backgroundColor: '#d6e022', borderColor: '#d6e022', duration: 0.4 };
+    const inactivo = { backgroundColor: '#f5f4ec', borderColor: '#15161a', duration: 0.4 };
+    const mm = gsap.matchMedia();
+
+    mm.add('(min-width: 768px)', () => {
+      const seccion = document.querySelector('#proceso');
+      const track = document.querySelector('.process__steps');
+      if (!seccion || !track) return;
+
+      seccion.classList.add('is-horizontal');
+
+      const marco = track.parentElement;
+      const recorrido = () => {
+        const cs = getComputedStyle(marco);
+        const padding = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+        return Math.max(0, track.scrollWidth + padding - marco.clientWidth);
+      };
+
+      /* Se enciende el paso en el que estás, repartido por el recorrido */
+      const pasos = gsap.utils.toArray('#proceso .step');
+      let activa = -1;
+      const marcar = (i) => {
+        if (i === activa) return;
+        activa = i;
+        pasos.forEach((paso, n) => paso.classList.toggle('is-activo', n === i));
+      };
+      marcar(0);
+
+      gsap.to(track, {
+        x: () => -recorrido(),
+        ease: 'none',
+        scrollTrigger: {
+          trigger: seccion, pin: true, scrub: 0.7, anticipatePin: 1,
+          start: 'top top', end: () => '+=' + recorrido(), invalidateOnRefresh: true,
+          onUpdate: (self) => marcar(Math.min(pasos.length - 1, Math.floor(self.progress * pasos.length))),
+        },
+      });
+
+      gsap.fromTo('.process__progress', { width: '0%' }, {
+        width: '100%', ease: 'none',
+        scrollTrigger: {
+          trigger: seccion, scrub: 0.7,
+          start: 'top top', end: () => '+=' + recorrido(), invalidateOnRefresh: true,
+        },
+      });
+
+      return () => {
+        seccion.classList.remove('is-horizontal');
+        pasos.forEach((paso) => paso.classList.remove('is-activo'));
+        gsap.set(track, { clearProps: 'all' });
+      };
+    });
+
+    mm.add('(max-width: 767px)', () => {
+      gsap.utils.toArray('.step').forEach((step) => {
+        const num = step.querySelector('.step__num');
+        ScrollTrigger.create({
+          trigger: step, start: 'top 65%', end: 'bottom 35%',
+          onEnter: () => gsap.to(num, activo),
+          onLeaveBack: () => gsap.to(num, inactivo),
+        });
       });
     });
   }
@@ -127,6 +196,24 @@ if (!reduceMotion && canHover) {
     });
     btn.addEventListener('pointerleave', () => {
       gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.4)' });
+    });
+  });
+}
+
+/* ---------- Tarjetas con inclinación 3D ---------- */
+if (!reduceMotion && canHover) {
+  document.querySelectorAll('.project').forEach((card) => {
+    card.addEventListener('pointermove', (e) => {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      gsap.to(card, {
+        rotateX: py * -5, rotateY: px * 5, y: -5,
+        transformPerspective: 900, duration: 0.5, ease: 'power2.out',
+      });
+    });
+    card.addEventListener('pointerleave', () => {
+      gsap.to(card, { rotateX: 0, rotateY: 0, y: 0, duration: 0.7, ease: 'power3.out' });
     });
   });
 }
@@ -257,3 +344,19 @@ if (navToggle && mobileMenu) {
   mobileMenu.querySelectorAll('a').forEach((a) => a.addEventListener('click', closeMenu));
   window.addEventListener('resize', () => { if (window.innerWidth >= 768) closeMenu(); });
 }
+
+/* ---------- Anclas con scroll suave (independiente de GSAP) ----------
+   Va en JS y no en CSS: scroll-behavior:smooth reanima cada ajuste que hace
+   ScrollTrigger y deja el snap del carrusel de proceso sin efecto. */
+document.querySelectorAll('a[href^="#"]').forEach((enlace) => {
+  enlace.addEventListener('click', (e) => {
+    const destino = document.querySelector(enlace.getAttribute('href'));
+    if (!destino) return;
+    e.preventDefault();
+    const suave = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({
+      top: destino.getBoundingClientRect().top + window.scrollY,
+      behavior: suave ? 'smooth' : 'auto',
+    });
+  });
+});

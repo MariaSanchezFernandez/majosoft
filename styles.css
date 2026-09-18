@@ -1,7 +1,9 @@
 /* ===== Base ===== */
 :root { --ease-smooth: cubic-bezier(.16,1,.3,1); }
-html { scroll-behavior: smooth; }
+/* El scroll suave lo hace main.js: en CSS rompería el snap de ScrollTrigger */
 body { overflow-x: hidden; cursor: none; background: #f5f4ec; }
+/* clip no fuerza overflow-y:auto, que rompería el pin de ScrollTrigger */
+@supports (overflow-x: clip) { body { overflow-x: clip; } }
 @media (hover: none) { body { cursor: auto; } }
 
 ::-webkit-scrollbar { width: 10px; }
@@ -267,8 +269,10 @@ body { overflow-x: hidden; cursor: none; background: #f5f4ec; }
 .project__icon-art--lg svg { width: 48px; height: 48px; }
 
 /* ===== Proceso ===== */
-.process { position: relative; }
+.process { position: relative; max-width: 72rem; margin-inline: auto; padding-inline: 1.25rem; }
 .process__line { display: none; }
+.process__intro { margin-bottom: 3.5rem; max-width: 42rem; }
+.process__hint { display: none; }   /* solo tiene sentido con el carrusel */
 
 /* --- Móvil: tarjetas apiladas tipo deck --- */
 .process__steps { display: flex; flex-direction: column; gap: 1.5rem; max-width: 680px; margin: 0 auto; }
@@ -307,22 +311,100 @@ body { overflow-x: hidden; cursor: none; background: #f5f4ec; }
   .step__title { font-size: 1.2rem; }
 }
 
-/* --- Escritorio: fila de 4 con línea/timeline --- */
+/* --- Escritorio sin carrusel: fila de 4 con línea/timeline --- */
 @media (min-width: 768px) {
-  .process__line { display: block; position: absolute; top: 16px; left: calc(12.5% - .9375rem); right: calc(12.5% - .9375rem); height: 2px; background: rgba(21,22,26,.14); z-index: 0; }
-  .process__progress { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #d6e022, #aebb0c); }
-  .process__steps { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5rem; max-width: none; margin: 0; }
-  .step {
+  #proceso:not(.is-horizontal) .process__line { display: block; position: absolute; top: 16px; left: calc(12.5% - .9375rem); right: calc(12.5% - .9375rem); height: 2px; background: rgba(21,22,26,.14); z-index: 0; }
+  #proceso:not(.is-horizontal) .process__progress { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #d6e022, #aebb0c); }
+  #proceso:not(.is-horizontal) .process__steps { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5rem; max-width: none; margin: 0; }
+  #proceso:not(.is-horizontal) .step {
     position: static; display: block; text-align: center;
     background: transparent; border: none; border-radius: 0; box-shadow: none;
     padding: 0; min-height: 0; overflow: visible;
   }
-  .step:hover { border-color: transparent; }
-  .step::after { display: none; }
-  .step__num { position: static; margin: 0 auto 1.5rem; }
-  .step__icon { margin: 0 auto 1.1rem; }
-  .step__title { padding-right: 0; font-size: 1.25rem; }
-  .step__text { max-width: 32ch; margin: 0 auto; font-size: .95rem; }
+  #proceso:not(.is-horizontal) .step:hover { border-color: transparent; }
+  #proceso:not(.is-horizontal) .step__num { position: static; margin: 0 auto 1.5rem; }
+  #proceso:not(.is-horizontal) .step__icon { margin: 0 auto 1.1rem; }
+  #proceso:not(.is-horizontal) .step__title { padding-right: 0; font-size: 1.25rem; }
+  #proceso:not(.is-horizontal) .step__text { max-width: 32ch; margin: 0 auto; font-size: .95rem; }
+}
+
+/* --- Escritorio con carrusel horizontal (la clase la pone GSAP) --- */
+@media (min-width: 768px) {
+  #proceso.is-horizontal {
+    min-height: 100vh; display: flex; flex-direction: column; justify-content: center;
+    padding-top: 6rem; padding-bottom: 3rem;
+  }
+  #proceso.is-horizontal > * { width: 100%; }
+
+  /* A sangre: el carril cruza la pantalla, pero empieza y acaba alineado con
+     el resto de la página. Lo que sobra se corta en el borde de la ventana. */
+  .is-horizontal .process {
+    overflow: hidden; max-width: none;
+    margin-inline: calc(50% - 50vw);
+    padding-inline: max(1.25rem, calc((100vw - 72rem) / 2 + 1.25rem));
+  }
+  .is-horizontal .process__steps {
+    display: flex; flex-direction: row; align-items: stretch; gap: 1.5rem;
+    width: max-content; max-width: none; margin: 0; will-change: transform;
+  }
+
+  /* Columna de texto: viaja como una diapositiva más */
+  .is-horizontal .process__intro {
+    display: flex; flex-direction: column; justify-content: center;
+    flex: 0 0 auto; width: min(80vw, 27rem); max-width: none;
+    margin-bottom: 0; padding-right: 2.5rem;
+  }
+  .is-horizontal .process__hint {
+    display: inline-flex; align-items: center; gap: .8rem; margin-top: 3rem;
+    font-size: .72rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+    color: rgba(21,22,26,.42);
+  }
+  .is-horizontal .process__hint::after {
+    content: ""; width: 3rem; height: 1px; background: rgba(21,22,26,.28);
+  }
+
+  /* Tarjeta: número gigante arriba, texto abajo y mucho aire en medio */
+  .is-horizontal .step {
+    position: relative; top: auto;
+    flex: 0 0 auto; width: min(82vw, 31rem); min-height: min(62vh, 27rem);
+    display: flex; flex-direction: column; box-shadow: none;
+    padding: 2.4rem 2.4rem 2.6rem; border-radius: 1.5rem;
+  }
+  .is-horizontal .step__num {
+    position: static; margin: 0 auto 0 0; width: auto; height: auto;
+    background: none; border: 0; border-radius: 0;
+    font-size: clamp(3.4rem, 5.5vw, 5rem); font-weight: 900; line-height: .95;
+    letter-spacing: -.04em; color: transparent;
+    -webkit-text-stroke: 2px rgba(21,22,26,.22);
+    transition: color .5s var(--ease-smooth), -webkit-text-stroke-color .5s var(--ease-smooth);
+  }
+  .is-horizontal .step.is-activo { border-color: rgba(174,187,12,.75); }
+  .is-horizontal .step.is-activo .step__num {
+    color: #15161a; -webkit-text-stroke-color: transparent;
+  }
+  .is-horizontal .step__icon {
+    position: absolute; top: 2.6rem; right: 2.4rem; margin: 0;
+    width: auto; height: auto; background: none; border: 0; border-radius: 0;
+    color: rgba(21,22,26,.25);
+    transition: color .5s var(--ease-smooth);
+  }
+  .is-horizontal .step__icon svg { width: 30px; height: 30px; }
+  .is-horizontal .step.is-activo .step__icon { color: rgba(21,22,26,.55); }
+  .is-horizontal .step__title {
+    margin: auto 0 .6rem; padding-right: 0;
+    font-size: clamp(1.35rem, 2vw, 1.8rem);
+  }
+  .is-horizontal .step__text { max-width: 36ch; font-size: .97rem; }
+
+  /* Regla inferior con el avance del recorrido, alineada con el contenido */
+  .is-horizontal .process__line {
+    display: block; position: relative; height: 2px; margin-top: 2.5rem;
+    background: rgba(21,22,26,.14);
+  }
+  .is-horizontal .process__progress {
+    position: absolute; left: 0; top: 0; height: 100%; width: 0%;
+    background: linear-gradient(90deg, #d6e022, #aebb0c);
+  }
 }
 
 /* ===== Lista de características (páginas de proyecto) ===== */
