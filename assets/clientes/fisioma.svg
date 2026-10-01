@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Fisioma">
+  <circle cx="60" cy="60" r="60" fill="#3f5bd3"/>
+  <g fill="none" stroke="#f4a37c" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M44 62 L40 40 M51 58 L49 30 M58 58 L59 32 M65 61 L68 38"/>
+    <path d="M44 62 C42 72 50 80 60 78 C68 77 72 70 70 64 L78 56"/>
+  </g>
+  <text x="60" y="98" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="19" fill="#fff">Fisioma</text>
+</svg>

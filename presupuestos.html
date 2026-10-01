@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maquetador de presupuestos · Majosoft</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cream: #f5f4ec; --cream2: #e9e8df; --line: #dcdbd0; --ink: #15161a; --ink2: #3a3a33;
+      --muted: #6b6b62; --lime: #d6e022; --lime2: #aebb0c; --paper: #fff;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body { font-family: Inter, system-ui, sans-serif; background: var(--cream); color: var(--ink); font-size: 14px; }
+
+    /* ===== Layout de la app ===== */
+    .app { display: grid; grid-template-columns: 440px 1fr; height: 100vh; }
+    .topbar { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: var(--ink); color: var(--cream); flex-wrap: wrap; }
+    .app { grid-template-rows: auto 1fr; }
+    .topbar .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -.02em; margin-right: auto; }
+    .topbar .brand img { height: 22px; filter: invert(1); }
+    .topbar .brand span { font-weight: 500; color: #a9a99c; }
+    .btn { border: 1px solid #3a3a33; background: transparent; color: inherit; padding: 8px 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn:hover { border-color: var(--lime); }
+    .btn--lime { background: var(--lime); color: var(--ink); border-color: var(--lime); }
+    .btn--lime:hover { background: #e3ec4a; }
+
+    .editor { overflow-y: auto; padding: 18px 18px 60px; border-right: 1px solid var(--line); background: var(--cream); }
+    .preview-wrap { overflow: auto; padding: 32px; background: #dcdbd0; }
+
+    details.sec { background: #fff; border: 1px solid var(--line); border-radius: 14px; margin-bottom: 10px; }
+    details.sec > summary { cursor: pointer; padding: 12px 16px; font-weight: 700; list-style: none; display: flex; justify-content: space-between; }
+    details.sec > summary::after { content: "+"; color: var(--muted); }
+    details.sec[open] > summary::after { content: "–"; }
+    .sec-body { padding: 0 16px 16px; }
+    label.f { display: block; margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--muted); }
+    label.f input, label.f textarea, label.f select { display: block; width: 100%; margin-top: 4px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 13px; color: var(--ink); background: #fcfcf8; }
+    label.f textarea { min-height: 70px; resize: vertical; }
+    label.f input:focus, label.f textarea:focus { outline: 2px solid var(--lime); border-color: var(--ink); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .chk { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; font-weight: 600; }
+    .hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .item { border: 1px dashed var(--line); border-radius: 10px; padding: 4px 12px 12px; margin-top: 12px; background: #fcfcf8; }
+    .item-head { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-weight: 700; font-size: 12px; }
+    .item-head .tools button { border: 1px solid var(--line); background: #fff; border-radius: 6px; padding: 2px 8px; cursor: pointer; font-size: 12px; margin-left: 4px; }
+    .item-head .tools button:hover { border-color: var(--ink); }
+    .add { margin-top: 12px; width: 100%; border: 1px dashed var(--ink2); background: transparent; padding: 8px; border-radius: 8px; cursor: pointer; font: inherit; font-weight: 600; }
+    .add:hover { background: var(--lime); border-style: solid; }
+
+    /* ===== Documento ===== */
+    .doc { width: 210mm; margin: 0 auto; display: flex; flex-direction: column; gap: 10mm; color: var(--ink); font-size: 10pt; line-height: 1.5; }
+    /* Hojas A4 */
+    .page { width: 210mm; height: 297mm; background: var(--paper); box-shadow: 0 20px 60px rgba(21,22,26,.18); display: flex; flex-direction: column; overflow: hidden; }
+    .page-body { flex: 1; min-height: 0; padding: 12mm 18mm 0; overflow: hidden; }
+    .page-foot { display: flex; justify-content: space-between; color: var(--muted); font-size: 7.5pt; padding: 4mm 18mm 8mm; border-top: 1px solid var(--line); margin: 0 18mm; padding-left: 0; padding-right: 0; }
+    .flow { position: absolute; left: -9999px; top: 0; width: 210mm; visibility: hidden; }
+    .doc * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .cover { background: var(--ink); color: var(--cream); padding: 9mm 18mm 8mm; position: relative; overflow: hidden; }
+    .cover::before { content: ""; position: absolute; width: 70mm; height: 70mm; border-radius: 50%; background: var(--lime); opacity: .14; filter: blur(30px); top: -35mm; right: -25mm; }
+    .cover-top { display: flex; justify-content: space-between; align-items: center; font-size: 9pt; color: #a9a99c; position: relative; }
+    .cover-top img { height: 20px; filter: invert(1); }
+    .cover .kicker { margin-top: 6mm; display: inline-block; background: var(--lime); color: var(--ink); font-weight: 800; font-size: 8pt; letter-spacing: .12em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; position: relative; }
+    .cover h1 { font-size: 21pt; line-height: 1.1; letter-spacing: -.03em; margin: 3mm 0 1.5mm; font-weight: 900; position: relative; }
+    .cover .sub { font-size: 10.5pt; color: #e9e8df; margin: 0; position: relative; }
+    .cover .tag { margin-top: 1.5mm; font-size: 8.5pt; color: var(--lime); font-weight: 600; position: relative; }
+    .cover-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; margin-top: 5mm; padding-top: 3.5mm; border-top: 1px solid #3a3a33; position: relative; }
+    .cover-meta div small { display: block; color: #a9a99c; font-size: 7.5pt; text-transform: uppercase; letter-spacing: .1em; }
+    .cover-meta div b { font-size: 9pt; }
+
+    .body { padding: 12mm 18mm 16mm; }
+    .h2 { display: flex; align-items: center; gap: 10px; font-size: 16pt; font-weight: 800; letter-spacing: -.02em; margin: 10mm 0 4mm; break-after: avoid; }
+    .h2::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 3px var(--ink); flex: none; }
+    .page-body > .h2:first-child, .page-body > :first-child { margin-top: 0; }
+    p { margin: 0 0 3mm; }
+    ul.b { margin: 2mm 0 0; padding: 0; list-style: none; }
+    ul.b li { position: relative; padding-left: 14px; margin-bottom: 1.6mm; }
+    ul.b li::before { content: ""; position: absolute; left: 0; top: .62em; width: 6px; height: 6px; border-radius: 2px; background: var(--lime2); }
+    ul.b.neg li::before { background: #c9c8bc; }
+
+    .why { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; margin-top: 4mm; }
+    .why div { background: var(--cream); border-radius: 3mm; padding: 3.5mm 4mm; break-inside: avoid; }
+    .why b { display: block; font-size: 10pt; margin-bottom: 1mm; }
+    .why span { color: var(--ink2); font-size: 9pt; }
+
+    .mod { display: grid; grid-template-columns: 16mm 1fr; gap: 4mm; border: 1px solid var(--line); border-radius: 4mm; padding: 5mm; margin-bottom: 4mm; break-inside: avoid; }
+    .mod--cont .mod-n::after { display: none; }
+    .mod-n { font-size: 20pt; font-weight: 900; letter-spacing: -.04em; color: var(--ink); line-height: 1; }
+    .mod-n::after { content: ""; display: block; width: 8mm; height: 3px; background: var(--lime); margin-top: 2mm; }
+    .mod-head { display: flex; justify-content: space-between; gap: 4mm; align-items: flex-start; }
+    .mod-head h3 { margin: 0; font-size: 12pt; letter-spacing: -.01em; }
+    .badge { display: inline-block; background: var(--lime); color: var(--ink); font-size: 7pt; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; margin-left: 6px; vertical-align: middle; }
+    .mod-price { text-align: right; white-space: nowrap; }
+    .mod-price b { display: block; font-size: 13pt; }
+    .mod-price small { color: var(--muted); }
+    .mod-desc { color: var(--ink2); margin: 2mm 0 0; }
+
+    table.sum { width: 100%; border-collapse: collapse; margin-top: 2mm; break-inside: avoid; }
+    table.sum th { text-align: left; font-size: 7.5pt; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 2mm 3mm; border-bottom: 2px solid var(--ink); }
+    table.sum td { padding: 2.3mm 3mm; border-bottom: 1px solid var(--line); }
+    table.sum .r { text-align: right; white-space: nowrap; }
+    table.sum tr.sub td { font-weight: 700; border-bottom: none; padding-top: 4mm; }
+    table.sum tr.iva td { color: var(--muted); }
+    table.sum tr.tot td { background: var(--ink); color: var(--cream); font-weight: 800; font-size: 12pt; border: none; }
+    table.sum tr.tot td:first-child { border-radius: 3mm 0 0 3mm; }
+    table.sum tr.tot td:last-child { border-radius: 0 3mm 3mm 0; color: var(--lime); }
+
+    .callout { background: var(--cream); border-left: 4px solid var(--lime); border-radius: 0 3mm 3mm 0; padding: 4mm 5mm; margin: 3mm 0; break-inside: avoid; }
+    .bono { display: grid; grid-template-columns: 1fr auto; gap: 6mm; align-items: center; background: var(--lime); border-radius: 4mm; padding: 6mm; margin-top: 4mm; break-inside: avoid; }
+    .bono small { font-weight: 800; letter-spacing: .12em; text-transform: uppercase; font-size: 7.5pt; }
+    .bono .price { font-size: 26pt; font-weight: 900; letter-spacing: -.04em; line-height: 1; text-align: right; }
+    .bono .price span { display: block; font-size: 8pt; font-weight: 600; letter-spacing: 0; }
+
+    .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin: 4mm 0; break-inside: avoid; }
+    .plan { border: 1px solid var(--line); border-radius: 4mm; padding: 5mm; }
+    .plan:last-child { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+    .plan small { font-size: 7.5pt; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: var(--muted); }
+    .plan:last-child small { color: var(--lime); }
+    .plan .price { font-size: 20pt; font-weight: 900; letter-spacing: -.03em; margin: 2mm 0 1mm; }
+    .plan .note { font-size: 8.5pt; opacity: .75; }
+    .plan .scope { margin-top: 3mm; font-weight: 600; font-size: 9pt; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+    .cols h4, .req h4 { margin: 3mm 0 1mm; font-size: 10pt; }
+    .req { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm 6mm; }
+    .req > div { break-inside: avoid; }
+
+    .contact { margin-top: 10mm; background: var(--ink); color: var(--cream); border-radius: 4mm; padding: 6mm; display: flex; justify-content: space-between; align-items: center; break-inside: avoid; }
+    .contact b { font-size: 12pt; display: block; }
+    .contact span { color: #a9a99c; font-size: 9pt; }
+    .contact img { height: 22px; filter: invert(1); }
+
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; height: auto; }
+      .editor { border-right: none; }
+      .preview-wrap { padding: 16px; }
+      .doc { zoom: .45; }
+    }
+    @page { size: A4; margin: 0; }
+    @media print {
+      body { background: #fff; }
+      .topbar, .editor { display: none !important; }
+      .app { display: block; height: auto; }
+      .preview-wrap { padding: 0; background: #fff; overflow: visible; }
+      .doc { width: 210mm; zoom: 1; gap: 0; }
+      .page { box-shadow: none; break-after: page; }
+      .page:last-child { break-after: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><img src="assets/logo.svg" alt="Majosoft" /> Majosoft <span>· Presupuestos</span></div>
+      <a class="btn" href="facturas.html" style="text-decoration:none">Facturas</a>
+      <button class="btn" id="bNew">Nuevo</button>
+      <button class="btn" id="bLoad">Abrir JSON</button>
+      <button class="btn" id="bSave">Guardar JSON</button>
+      <button class="btn btn--lime" id="bPrint">Exportar PDF</button>
+      <input type="file" id="file" accept="application/json" hidden />
+    </header>
+    <aside class="editor" id="editor"></aside>
+    <main class="preview-wrap"><article class="doc" id="doc"></article></main>
+  </div>
+
+<script>
+/* ===== Plantilla de ejemplo: presupuesto Academia Online ===== */
+const EJEMPLO = {
+  kicker: "Propuesta de proyecto",
+  titulo: "Plataforma formativa a medida",
+  subtitulo: "Campus virtual para Objetivo Baeza · Mantenimiento de Guía del Bombero",
+  tagline: "Sin coste por alumno · Integrado con la web actual · Rendimiento y SEO optimizados",
+  cliente: "Objetivo Baeza y Guía del Bombero — Academia Guardia Civil",
+  referencia: "MJS-2026-014",
+  fecha: "2026-05-28",
+  lanzamiento: "Septiembre 2026",
+  objetivo: "Desarrollar un campus virtual propio para Objetivo Baeza y Guía del Bombero, accesible desde un subdominio de la web actual de Objetivo Baeza (por ejemplo, campus.objetivobaeza.com) y con el mismo diseño que la web principal, de forma que el alumno sienta en todo momento que está navegando dentro de la misma plataforma.\n\nLa solución gestionará alumnos, cursos, materiales, cuestionarios, un sistema de tarjetas Anki integrado y un banco de tests colaborativo entre alumnos y equipo docente. La integración con Stripe automatizará completamente el alta del alumno al completar el pago, sin intervención manual.\n\nEl objetivo no es replicar Moodle o EvolCampus en su totalidad, sino construir una primera versión funcional y escalable, centrada en las funcionalidades necesarias para el lanzamiento.",
+  porqueTitulo: "¿Por qué desarrollar el campus con código propio?",
+  porqueIntro: "Las webs actuales de Objetivo Baeza y Guía del Bombero funcionan sobre WordPress y se mantendrán tal cual. El campus virtual, sin embargo, se desarrolla con código propio por varias razones prácticas:",
+  porque: [
+    "Rendimiento: las páginas del campus cargan mucho más rápido que cualquier solución basada en plugins de WordPress, lo que mejora la experiencia del alumno y el posicionamiento en Google",
+    "Sin coste por alumno: a diferencia de plataformas como EvolCampus, no hay tarifas que crezcan con el volumen de alumnos matriculados",
+    "Estabilidad: al no depender de plugins de terceros, se eliminan los problemas habituales de incompatibilidades y actualizaciones que rompen funcionalidades",
+    "Mismo diseño: el campus replica el aspecto visual de la web WordPress, con la misma cabecera, colores, tipografías y navegación, de forma que la transición es invisible para el usuario",
+    "Escalabilidad: la plataforma crece sin límite técnico conforme aumenten los alumnos, los cursos o los contenidos",
+    "Propiedad total: el código es 100% de Objetivo Baeza y Guía del Bombero, sin licencias ni dependencias de plataformas externas"
+  ],
+  modulos: [
+    { titulo: "Arquitectura y Base de Datos", nuevo: false, horas: 14, precio: 645, descripcion: "Estructura base del proyecto, modelo de datos y configuración de seguridad.", items: ["Estructura del campus virtual con su propio subdominio integrado visualmente con la web principal","Diseño del modelo de datos: alumnos, cursos, matrículas, materiales, preguntas, tarjetas Anki, tests y resultados","Sistema de roles y permisos: administrador, profesor, tutor, alumno","Arquitectura modular para permitir ampliaciones futuras","Restricción de acceso a materiales solo para usuarios matriculados","Protección básica frente a descarga directa de contenidos y bloqueo de clic derecho","Preparación para integrar medidas adicionales como marca de agua dinámica o proveedor de vídeo protegido"] },
+    { titulo: "Gestión de Alumnos, Cursos y Accesos", nuevo: false, horas: 14, precio: 640, descripcion: "Panel de administración para gestionar alumnos, cursos, matrículas y periodos de acceso.", items: ["Alta, edición y consulta de alumnos desde el panel de administración","Creación y edición de cursos con estructura jerárquica","Asignación manual de alumnos a cursos","Control de acceso por curso, alumno y estado de matrícula","Gestión de accesos por periodos o cohortes — evita duplicar cursos por grupo o mes","Listado de alumnos activos, caducados o sin acceso con exportación","Seguimiento y exportación de informes de actividad","Roles de usuario: administrador, profesor, tutor, alumno"] },
+    { titulo: "Gestión de Materiales del Curso", nuevo: false, horas: 10, precio: 460, descripcion: "Sistema para añadir y organizar contenidos formativos dentro de cada curso.", items: ["Creación de módulos, lecciones o bloques dentro de cada curso","Subida de materiales: imágenes, PDFs, documentos y recursos descargables","Integración de vídeos externos: Vimeo, YouTube privado, CDN u otro proveedor","Ordenación y activación/desactivación de contenidos por fecha o manualmente","Vista privada: cada alumno ve solo los cursos y materiales a los que tiene acceso","Importación de preguntas desde CSV con columna de peso por pregunta","Tablón de anuncios segmentado por tipo: Novedad, Aviso urgente, Evento, Actualización de contenido"] },
+    { titulo: "Preguntas, Conversaciones y Cuestionarios", nuevo: false, horas: 12, precio: 545, descripcion: "Motor de tests, banco de preguntas y sistema de comunicación entre alumno y equipo docente.", items: ["Banco de preguntas asociado a cursos o temas con peso diferente por pregunta","Cuestionarios con opción múltiple, respuesta única y verdadero/falso","Simulacros con número de intentos configurable (por defecto 1)","El alumno no ve las respuestas durante el test; solo al terminar, en la pantalla de corrección","Explicaciones por pregunta: al fallar, siempre, o al terminar (texto, fragmento del temario o enlace)","Marcado de preguntas: resuelta, dudosa, fallada; preguntas marcadas como 'Importantes' con color o etiqueta","Impugnaciones: el alumno comenta en la pregunta, notificación al equipo, revisión, respuesta y cierre","Panel de calificaciones: nota por simulacro, media del grupo, evolución temporal; exportación CSV/PDF"] },
+    { titulo: "Tests Colaborativos: Alumno → Profesor", nuevo: true, horas: 12, precio: 545, descripcion: "Los alumnos pueden generar y publicar sus propios tests, que se almacenan en la base de datos del profesor para su reutilización y distribución a otros alumnos.", items: ["El alumno puede generar tests propios filtrando preguntas por estado: dudosas, falladas, acertadas","El alumno guarda esos tests generados y puede publicarlos para otros alumnos","Los tests publicados por el alumno se almacenan automáticamente en la base de datos del profesor","El profesor puede revisar, moderar y aprobar qué tests se publican en la plataforma","El profesor puede reutilizar y subir esos tests para todos los alumnos","Las preguntas de los tests de alumnos nutren el banco de preguntas general del profesor","Sistema de moderación con estados: pendiente, aprobado, rechazado","Historial completo de tests generados y publicados por cada alumno"] },
+    { titulo: "Sistema Anki Integrado", nuevo: true, horas: 14, precio: 645, descripcion: "Sistema de tarjetas de repaso integrado en la plataforma, sin necesidad de app externa. Las tarjetas se sincronizan entre alumno y profesor, y pueden convertirse en preguntas de test.", items: ["Tanto el profesor como el alumno pueden crear tarjetas Anki (pregunta / respuesta)","Las tarjetas creadas por el alumno se sincronizan automáticamente en la base de datos del profesor","El profesor puede enviar mazos de tarjetas a otros alumnos directamente desde su panel","Asignación de prioridad a cada tarjeta: alta, media, baja","Las preguntas de las tarjetas Anki pueden convertirse en preguntas de test con un clic","El sistema prioriza las tarjetas más importantes y las que el alumno tiene más flojas","Acceso del profesor a todas las tarjetas de sus alumnos para seguimiento y reutilización"] },
+    { titulo: "Integración con Stripe", nuevo: false, horas: 5, precio: 230, descripcion: "Automatización completa del alta del alumno al completar el pago. El alumno paga, recibe sus credenciales y accede al campus sin que nadie del equipo tenga que intervenir.", items: ["Configuración de productos y precios en Stripe vinculados a cursos de la plataforma","Página de pago integrada en la web","Creación automática de la cuenta del alumno al completar el pago","Asignación automática del curso comprado","Email automático con credenciales de acceso","Registro de errores o incidencias en el proceso de alta"] },
+    { titulo: "Integración Visual y Área Privada del Alumno", nuevo: false, horas: 10, precio: 460, descripcion: "El campus virtual mantiene exactamente el mismo aspecto que las webs principales. Misma cabecera, mismos colores, mismas tipografías. El alumno no percibe que está en una plataforma diferente.", items: ["Diseño de todas las vistas del campus: listado de cursos, contenido, tests, Anki y conversaciones","Área privada del alumno con navegación clara","Replicación del diseño, cabecera y estilo de la web WordPress actual","Navegación fluida sin sensación de salto a una plataforma externa","Maquetación responsive optimizada para escritorio, tablet y móvil"] },
+    { titulo: "Pruebas, Validación y Puesta en Marcha", nuevo: false, horas: 8, precio: 375, descripcion: "Revisión funcional de todos los flujos principales antes de la entrega de la primera versión.", items: ["Pruebas de registro, login y acceso de alumno","Pruebas de compra y alta automática mediante Stripe en modo test","Pruebas de acceso a cursos y materiales","Pruebas de preguntas, conversaciones e impugnaciones","Pruebas del flujo Tests Colaborativos (alumno publica → profesor modera → se redistribuye)","Pruebas del sistema Anki: creación, sincronización y conversión a preguntas de test","Corrección de incidencias detectadas durante la validación inicial","Documentación básica de uso para el equipo de administración"] },
+    { titulo: "Formación de Uso y Soporte de Arranque", nuevo: false, horas: 0, precio: 0, descripcion: "Una vez publicada la primera versión, se incluye una fase de acompañamiento inicial.", items: ["Sesión inicial de onboarding para explicar el funcionamiento general y el flujo de trabajo recomendado","Formación para administración: gestión de alumnos, cursos, tests, Anki y conversaciones","Soporte de arranque durante el primer mes para dudas y ajustes menores"] }
+  ],
+  iva: 21,
+  auto: true,
+  totalConIva: 5500,
+  formaPago: "Forma de pago habitual: 25% al inicio del proyecto + 75% a la entrega. Todos los precios incluyen IVA.",
+  bono: { activo: true, titulo: "Bono Acción Rápida", precio: 4950, fechaLimite: "2026-06-04", texto: "Si confirmáis el proyecto antes de la fecha límite, el precio final se reduce a 4.950 € (IVA incluido). Disponible solo 7 días." },
+  mant: {
+    activo: true,
+    titulo: "Mantenimiento Integral",
+    intro: "Te proponemos asumir directamente el mantenimiento técnico del ecosistema digital de la academia. Actualmente este servicio lo lleva otra empresa; con nuestro plan pasaría a centralizarse en una única cuota mensual, gestionada por el mismo equipo que desarrolla el campus.",
+    planes: [
+      { etiqueta: "Durante desarrollo", precio: "50 €/mes", nota: "IVA incluido — Hasta la aceptación del campus", alcance: "Guía del Bombero + Objetivo Baeza" },
+      { etiqueta: "A partir del lanzamiento", precio: "95 €/mes", nota: "IVA incluido — Tras la puesta en producción", alcance: "Guía del Bombero + Objetivo Baeza + Campus" }
+    ],
+    incluye: ["Hosting de Guía del Bombero y Objetivo Baeza (incluido el campus virtual)","Dominios y renovaciones anuales","Certificados SSL y configuración de seguridad HTTPS","Copias de seguridad periódicas y restauraciones en caso necesario","Parches de seguridad y actualizaciones críticas de dependencias","Monitorización de uptime y alertas ante caídas","Revisión mensual del estado general de ambas webs","Comprobación periódica de flujos críticos: registro, pago, acceso a materiales y tests","Resolución de incidencias técnicas en horario laboral (L-V, 9:00–18:00)","Soporte por email y teléfono para consultas operativas"],
+    noIncluye: ["Desarrollo de nuevas funcionalidades o módulos no contemplados en el presupuesto inicial","Rediseños visuales o cambios estructurales en las webs","Migraciones a otros proveedores de hosting o cambios de stack tecnológico","Integración con servicios o plataformas de terceros no previstos en el alcance original","Soporte fuera de horario laboral o en festivos","Recuperación de datos por causas ajenas al servicio (eliminaciones por el cliente, ataques no prevenibles, etc.)","Formación adicional más allá del onboarding inicial"],
+    nota: "El cambio de tarifa de 50 €/mes a 95 €/mes se aplicará desde el mes siguiente a la aceptación formal de la primera versión del campus virtual. Los trabajos puntuales no incluidos se presupuestarán aparte previa aprobación del cliente."
+  },
+  garantia: ["Hasta el 31 de diciembre de 2026, todos los arreglos puntuales del campus son gratuitos, esté contratado o no el plan de mantenimiento.","A partir del 1 de enero de 2027, sin plan de mantenimiento contratado, cada intervención de arreglo del campus se factura a 30 €.","Las ampliaciones, nuevas funcionalidades o cambios estructurales del campus se presupuestan siempre aparte."],
+  requisitosIntro: "Para poder iniciar el proyecto, el cliente deberá proporcionar o confirmar lo siguiente:",
+  requisitos: [
+    { titulo: "Infraestructura", items: ["Facilitar acceso al proveedor DNS para configurar el subdominio del campus","Confirmar proveedor de alojamiento de vídeo: Vimeo, YouTube privado, CDN u otro","Aceptar que no existe protección web 100% frente a grabación de pantalla por usuarios avanzados"] },
+    { titulo: "Contenidos y Configuración", items: ["Entregar contenidos iniciales o ejemplos reales para validar la estructura de materiales","Definir si los accesos serán por compra única, mensualidad, convocatoria o fecha concreta","Facilitar estructura inicial de cursos y tipos de alumnos si ya existe","Facilitar productos y reglas de acceso: curso, duración, renovación o caducidad"] },
+    { titulo: "Diseño", items: ["Facilitar manual de marca, colores, tipografías y referencias visuales","Facilitar acceso a la web WordPress actual para replicar el diseño en el campus"] },
+    { titulo: "Validación", items: ["Disponer de cuenta Stripe en modo test para validar el flujo de pago completo"] }
+  ],
+  contacto: { nombre: "José Manuel Borrás Rodríguez", telefono: "648 867 950", email: "dev@majosoft.es", web: "majosoft.es" }
+};
+
+const VACIO = {
+  kicker: "Propuesta de proyecto", titulo: "Nuevo proyecto", subtitulo: "", tagline: "", cliente: "", referencia: "",
+  fecha: new Date().toISOString().slice(0, 10), lanzamiento: "", objetivo: "", porqueTitulo: "", porqueIntro: "", porque: [],
+  modulos: [{ titulo: "Módulo 1", nuevo: false, horas: 0, precio: 0, descripcion: "", items: [] }],
+  iva: 21, auto: true, totalConIva: 0, formaPago: "Forma de pago habitual: 25% al inicio del proyecto + 75% a la entrega.",
+  bono: { activo: false, titulo: "", precio: "", fechaLimite: "", texto: "" },
+  mant: { activo: false, titulo: "Mantenimiento", intro: "", planes: [], incluye: [], noIncluye: [], nota: "" },
+  garantia: [], requisitosIntro: "", requisitos: [],
+  contacto: { ...EJEMPLO.contacto }
+};
+
+const KEY = "majosoft-presupuesto";
+let D;
+try { D = JSON.parse(localStorage.getItem(KEY)) || structuredClone(EJEMPLO); } catch { D = structuredClone(EJEMPLO); }
+const migrar = d => {
+  if (d.totalConIva == null) { d.auto = true; d.totalConIva = Number(d.totalRedondeado) || Math.round(d.modulos.reduce((s, m) => s + Number(m.precio || 0), 0) * (1 + d.iva / 100)); }
+  delete d.totalRedondeado; return d;
+};
+D = migrar(D);
+
+/* ===== Utilidades ===== */
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const eur = n => Number(n || 0).toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 2, useGrouping: "always" }) + " €";
+const fecha = s => s ? new Date(s + "T00:00").toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" }) : "";
+const paras = s => String(s || "").split(/\n\s*\n/).filter(x => x.trim()).map(x => `<p>${esc(x)}</p>`).join("");
+const list = (arr, cls = "b") => arr?.length ? `<ul class="${cls}">${arr.map(i => `<li>${esc(i)}</li>`).join("")}</ul>` : "";
+const get = (path) => path.split(".").reduce((o, k) => o?.[k], D);
+const set = (path, v) => { const ks = path.split("."); const last = ks.pop(); ks.reduce((o, k) => o[k], D)[last] = v; };
+
+/* ===== Vista previa ===== */
+/* Modo automático: se parte del precio final con IVA, se quita el IVA
+   y la base se reparte entre los módulos según sus horas (redondeo a 5 €). */
+function repartir() {
+  const base = Math.round(Number(D.totalConIva || 0) / (1 + D.iva / 100));
+  const mods = D.modulos.filter(m => Number(m.horas) > 0);
+  const H = mods.reduce((s, m) => s + Number(m.horas), 0);
+  D.modulos.forEach(m => { if (!(Number(m.horas) > 0)) m.precio = 0; });
+  if (!H) return;
+  mods.forEach(m => m.precio = Math.round(base * m.horas / H / 5) * 5);
+  const resto = base - mods.reduce((s, m) => s + m.precio, 0);
+  mods.reduce((a, m) => m.horas > a.horas ? m : a).precio += resto;
+}
+
+function calc() {
+  if (D.auto) repartir();
+  const subtotal = D.modulos.reduce((s, m) => s + Number(m.precio || 0), 0);
+  const horas = D.modulos.reduce((s, m) => s + Number(m.horas || 0), 0);
+  const total = D.auto ? Number(D.totalConIva || 0) : Math.round(subtotal * (1 + D.iva / 100) * 100) / 100;
+  return { subtotal, horas, iva: Math.round((total - subtotal) * 100) / 100, total };
+}
+
+function render() {
+  const c = calc();
+  const n = i => String(i + 1).padStart(2, "0");
+  const precioMod = m => Number(m.precio) ? `<b>${eur(m.precio)}</b><small>${m.horas ? m.horas + " horas" : ""}</small>` : `<b>Incluido</b>`;
+  const porque = D.porque.map(t => { const [a, ...b] = t.split(":"); return b.length ? `<div><b>${esc(a)}</b><span>${esc(b.join(":").trim())}</span></div>` : `<div><span>${esc(t)}</span></div>`; }).join("");
+
+  document.getElementById("doc").innerHTML = `
+  <section class="cover">
+    <div class="cover-top"><img src="assets/logo.svg" alt="Majosoft" /><span>${esc(D.referencia)}${D.referencia && D.fecha ? " · " : ""}${fecha(D.fecha)}</span></div>
+    <span class="kicker">${esc(D.kicker)}</span>
+    <h1>${esc(D.titulo)}</h1>
+    ${D.subtitulo ? `<p class="sub">${esc(D.subtitulo)}</p>` : ""}
+    ${D.tagline ? `<p class="tag">${esc(D.tagline)}</p>` : ""}
+    <div class="cover-meta">
+      <div><small>Cliente</small><b>${esc(D.cliente) || "—"}</b></div>
+      <div><small>Inversión</small><b>${eur(c.total)} IVA incl.</b></div>
+      <div><small>Lanzamiento objetivo</small><b>${esc(D.lanzamiento) || "—"}</b></div>
+    </div>
+  </section>
+  <div class="body">
+    ${D.objetivo ? `<h2 class="h2">Objetivo del proyecto</h2>${paras(D.objetivo)}` : ""}
+    ${D.porque.length ? `<h2 class="h2">${esc(D.porqueTitulo || "¿Por qué este enfoque?")}</h2>${paras(D.porqueIntro)}<div class="why">${porque}</div>` : ""}
+
+    <h2 class="h2">Módulos del proyecto</h2>
+    ${D.modulos.map((m, i) => `
+      <div class="mod">
+        <div class="mod-n">${n(i)}</div>
+        <div>
+          <div class="mod-head"><h3>${esc(m.titulo)}${m.nuevo ? '<span class="badge">Nuevo</span>' : ""}</h3><div class="mod-price">${precioMod(m)}</div></div>
+          ${m.descripcion ? `<p class="mod-desc">${esc(m.descripcion)}</p>` : ""}
+          ${list(m.items)}
+        </div>
+      </div>`).join("")}
+
+    <h2 class="h2">Resumen económico</h2>
+    <table class="sum">
+      <thead><tr><th>Módulo</th><th class="r">Horas</th><th class="r">Precio</th></tr></thead>
+      <tbody>
+        ${D.modulos.map(m => `<tr><td>${esc(m.titulo)}${m.nuevo ? '<span class="badge">Nuevo</span>' : ""}</td><td class="r">${m.horas ? m.horas + "h" : "—"}</td><td class="r">${Number(m.precio) ? eur(m.precio) : "Incluido"}</td></tr>`).join("")}
+        <tr class="sub"><td>Subtotal (sin IVA)</td><td class="r">${c.horas}h</td><td class="r">${eur(c.subtotal)}</td></tr>
+        <tr class="iva"><td>IVA (${D.iva}%)</td><td></td><td class="r">${eur(c.iva)}</td></tr>
+        <tr class="tot"><td>Total (IVA incluido)</td><td class="r">${c.horas}h</td><td class="r">${eur(c.total)}</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="h2">Condiciones de pago</h2>
+    <div class="callout">${esc(D.formaPago)}</div>
+    ${D.bono.activo ? `
+      <div class="bono">
+        <div><small>${esc(D.bono.titulo)}${D.bono.fechaLimite ? " · hasta el " + fecha(D.bono.fechaLimite) : ""}</small><p style="margin:2mm 0 0">${esc(D.bono.texto)}</p></div>
+        <div class="price">${eur(D.bono.precio)}<span>IVA incluido</span></div>
+      </div>` : ""}
+
+    ${D.mant.activo ? `
+      <h2 class="h2">${esc(D.mant.titulo)}</h2>
+      ${paras(D.mant.intro)}
+      ${D.mant.planes.length ? `<div class="plans">${D.mant.planes.map(p => `<div class="plan"><small>${esc(p.etiqueta)}</small><div class="price">${esc(p.precio)}</div><div class="note">${esc(p.nota)}</div><div class="scope">${esc(p.alcance)}</div></div>`).join("")}</div>` : ""}
+      <div class="cols">
+        ${D.mant.incluye.length ? `<div><h4>Qué incluye</h4>${list(D.mant.incluye)}</div>` : ""}
+        ${D.mant.noIncluye.length ? `<div><h4>Qué no incluye</h4>${list(D.mant.noIncluye, "b neg")}</div>` : ""}
+      </div>
+      ${D.mant.nota ? `<div class="callout">${esc(D.mant.nota)}</div>` : ""}` : ""}
+
+    ${D.garantia.length ? `<h2 class="h2">Garantía y arreglos</h2>${list(D.garantia)}` : ""}
+
+    ${D.requisitos.length ? `<h2 class="h2">Requisitos por parte del cliente</h2>${paras(D.requisitosIntro)}
+      <div class="req">${D.requisitos.map(r => `<div><h4>${esc(r.titulo)}</h4>${list(r.items)}</div>`).join("")}</div>` : ""}
+
+    <div class="contact">
+      <div><b>${esc(D.contacto.nombre)}</b><span>${[D.contacto.telefono, D.contacto.email, D.contacto.web].filter(Boolean).map(esc).join("  ·  ")}</span></div>
+      <img src="assets/logo.svg" alt="Majosoft" />
+    </div>
+  </div>
+`;
+  paginar();
+  document.title = `Presupuesto · ${D.titulo} · Majosoft`;
+}
+
+/* Reparte los bloques del documento en hojas A4: si un bloque no cabe,
+   pasa a la siguiente hoja; los títulos se llevan con su primer bloque. */
+function paginar() {
+  const doc = document.getElementById("doc");
+  const flow = document.createElement("div");
+  flow.className = "flow";
+  flow.innerHTML = doc.innerHTML;
+  doc.innerHTML = "";
+  doc.after(flow);
+  const cover = flow.querySelector(".cover");
+  const bloques = [...flow.querySelector(".body").children];
+  const pie = "Majosoft · Estudio de desarrollo de software en Jaén · Presupuesto válido 30 días desde su emisión";
+
+  const pages = [];
+  const nueva = () => {
+    const pg = document.createElement("section");
+    pg.className = "page";
+    pg.innerHTML = `<div class="page-body"></div><div class="page-foot"><span>${pie}</span><span class="n"></span></div>`;
+    doc.appendChild(pg); pages.push(pg);
+    return pg.querySelector(".page-body");
+  };
+  let body = nueva();
+  body.before(cover);
+  const llena = () => body.scrollHeight > body.clientHeight + 1;
+
+  for (let i = 0; i < bloques.length; i++) {
+    const b = bloques[i];
+    body.appendChild(b);
+    if (!llena()) continue;
+    if (body.children.length === 1) continue; // bloque más alto que una hoja: se queda
+    // Rejillas (ventajas, requisitos): se parten por tarjetas entre hojas
+    if (b.matches(".why, .req") && b.children.length > 2) {
+      const resto = b.cloneNode(false);
+      while (llena() && b.children.length > 2) { resto.prepend(b.lastElementChild); if (b.children.length % 2) resto.prepend(b.lastElementChild); }
+      if (!llena()) { bloques.splice(i + 1, 0, resto); continue; }
+      while (resto.firstElementChild) b.appendChild(resto.firstElementChild);
+    }
+    // Módulos: si no caben, sus puntos continúan en la hoja siguiente
+    if (b.matches(".mod")) {
+      const ul = b.querySelector("ul.b");
+      if (ul && ul.children.length > 1) {
+        const cont = b.cloneNode(true);
+        const cul = cont.querySelector("ul.b"); cul.innerHTML = "";
+        cont.querySelector(".mod-desc")?.remove();
+        cont.querySelector(".mod-price")?.remove();
+        cont.querySelector(".mod-n").textContent = "";
+        cont.querySelector("h3").insertAdjacentHTML("beforeend", ' <small style="font-weight:500;color:var(--muted)">(continuación)</small>');
+        cont.classList.add("mod--cont");
+        while (llena() && ul.children.length > 1) cul.prepend(ul.lastElementChild);
+        if (!llena()) { bloques.splice(i + 1, 0, cont); continue; }
+        while (cul.firstElementChild) ul.appendChild(cul.firstElementChild);
+      }
+    }
+    const prev = b.previousElementSibling;
+    body = nueva();
+    if (prev && prev.classList.contains("h2")) body.appendChild(prev);
+    body.appendChild(b);
+  }
+  pages.forEach((pg, i) => pg.querySelector(".n").textContent = `Página ${i + 1} de ${pages.length}`);
+  flow.remove();
+}
+
+/* ===== Editor ===== */
+const txt = (label, path, opts = {}) => {
+  const v = get(path) ?? "";
+  const t = opts.type || "text";
+  if (t === "area") return `<label class="f">${label}<textarea data-p="${path}" data-t="text">${esc(v)}</textarea></label>`;
+  if (t === "lines") return `<label class="f">${label}<textarea data-p="${path}" data-t="lines" style="min-height:${opts.h || 110}px">${esc((v || []).join("\n"))}</textarea><div class="hint">Un punto por línea</div></label>`;
+  if (t === "check") return `<label class="chk"><input type="checkbox" data-p="${path}" data-t="bool" ${v ? "checked" : ""}/> ${label}</label>`;
+  return `<label class="f">${label}<input type="${t}" data-p="${path}" data-t="${t === "number" ? "num" : "text"}" value="${esc(v)}" ${opts.ph ? `placeholder="${esc(opts.ph)}"` : ""}/></label>`;
+};
+const sec = (title, body, open) => `<details class="sec" ${open ? "open" : ""}><summary>${title}</summary><div class="sec-body">${body}</div></details>`;
+const head = (label, arr, i) => `<div class="item-head">${label}<span class="tools"><button data-act="up" data-arr="${arr}" data-i="${i}" title="Subir">↑</button><button data-act="down" data-arr="${arr}" data-i="${i}" title="Bajar">↓</button><button data-act="del" data-arr="${arr}" data-i="${i}" title="Eliminar">✕</button></span></div>`;
+
+function buildEditor() {
+  const openSet = new Set([...document.querySelectorAll("details.sec[open] > summary")].map(s => s.textContent));
+  const o = t => openSet.size ? openSet.has(t) : t === "Portada";
+  document.getElementById("editor").innerHTML =
+    sec("Portada", `
+      ${txt("Etiqueta", "kicker")}${txt("Título", "titulo")}${txt("Subtítulo", "subtitulo")}${txt("Frase destacada", "tagline")}
+      ${txt("Cliente", "cliente")}
+      <div class="row">${txt("Referencia", "referencia")}${txt("Fecha", "fecha", { type: "date" })}</div>
+      ${txt("Lanzamiento objetivo", "lanzamiento")}`, o("Portada")) +
+    sec("Objetivo y enfoque", `
+      ${txt("Objetivo del proyecto", "objetivo", { type: "area" })}<div class="hint">Separa párrafos con una línea en blanco</div>
+      ${txt("Título del bloque de ventajas", "porqueTitulo")}${txt("Introducción", "porqueIntro", { type: "area" })}
+      ${txt("Ventajas", "porque", { type: "lines", h: 160 })}<div class="hint">Usa «Título: explicación» para destacar el título</div>`, o("Objetivo y enfoque")) +
+    sec("Módulos", D.modulos.map((m, i) => `<div class="item">${head("Módulo " + String(i + 1).padStart(2, "0"), "modulos", i)}
+      ${txt("Título", `modulos.${i}.titulo`)}
+      <div class="row">${txt("Horas", `modulos.${i}.horas`, { type: "number" })}${txt(D.auto ? "Precio (automático)" : "Precio (€ sin IVA, 0 = incluido)", `modulos.${i}.precio`, { type: "number" })}</div>
+      ${txt("Marcar como nuevo", `modulos.${i}.nuevo`, { type: "check" })}
+      ${txt("Descripción", `modulos.${i}.descripcion`, { type: "area" })}
+      ${txt("Puntos", `modulos.${i}.items`, { type: "lines" })}</div>`).join("") +
+      `<button class="add" data-add="modulos">+ Añadir módulo</button>`, o("Módulos")) +
+    sec("Precio y pago", `
+      ${txt("Cálculo automático desde el precio final", "auto", { type: "check" })}
+      <div class="row">${txt("Precio final (€ IVA incluido)", "totalConIva", { type: "number" })}${txt("IVA (%)", "iva", { type: "number" })}</div>
+      <div class="hint" id="calcHint"></div>
+      ${txt("Forma de pago", "formaPago", { type: "area" })}
+      ${txt("Incluir bono / descuento", "bono.activo", { type: "check" })}
+      ${txt("Nombre del bono", "bono.titulo")}
+      <div class="row">${txt("Precio final (€ IVA incl.)", "bono.precio", { type: "number" })}${txt("Fecha límite", "bono.fechaLimite", { type: "date" })}</div>
+      ${txt("Texto", "bono.texto", { type: "area" })}`, o("Precio y pago")) +
+    sec("Mantenimiento", `
+      ${txt("Incluir mantenimiento", "mant.activo", { type: "check" })}
+      ${txt("Título", "mant.titulo")}${txt("Introducción", "mant.intro", { type: "area" })}
+      ${D.mant.planes.map((p, i) => `<div class="item">${head("Plan " + (i + 1), "mant.planes", i)}
+        <div class="row">${txt("Etiqueta", `mant.planes.${i}.etiqueta`)}${txt("Precio", `mant.planes.${i}.precio`)}</div>
+        ${txt("Nota", `mant.planes.${i}.nota`)}${txt("Alcance", `mant.planes.${i}.alcance`)}</div>`).join("")}
+      <button class="add" data-add="mant.planes">+ Añadir plan</button>
+      ${txt("Qué incluye", "mant.incluye", { type: "lines", h: 160 })}
+      ${txt("Qué no incluye", "mant.noIncluye", { type: "lines", h: 140 })}
+      ${txt("Nota final", "mant.nota", { type: "area" })}`, o("Mantenimiento")) +
+    sec("Garantía y requisitos", `
+      ${txt("Garantía y arreglos", "garantia", { type: "lines" })}
+      ${txt("Introducción de requisitos", "requisitosIntro", { type: "area" })}
+      ${D.requisitos.map((r, i) => `<div class="item">${head("Grupo " + (i + 1), "requisitos", i)}
+        ${txt("Título", `requisitos.${i}.titulo`)}${txt("Requisitos", `requisitos.${i}.items`, { type: "lines" })}</div>`).join("")}
+      <button class="add" data-add="requisitos">+ Añadir grupo</button>`, o("Garantía y requisitos")) +
+    sec("Contacto", `
+      ${txt("Nombre", "contacto.nombre")}
+      <div class="row">${txt("Teléfono", "contacto.telefono")}${txt("Email", "contacto.email")}</div>
+      ${txt("Web", "contacto.web")}`, o("Contacto"));
+}
+
+const NUEVOS = {
+  "modulos": () => ({ titulo: "Nuevo módulo", nuevo: false, horas: 0, precio: 0, descripcion: "", items: [] }),
+  "mant.planes": () => ({ etiqueta: "", precio: "", nota: "", alcance: "" }),
+  "requisitos": () => ({ titulo: "Nuevo grupo", items: [] })
+};
+
+function save() { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch {} }
+function refresh(rebuild) { if (rebuild) buildEditor(); render(); syncEditor(); save(); }
+
+/* Refleja en el editor los precios calculados sin reconstruirlo (no se pierde el foco) */
+function syncEditor() {
+  const c = calc();
+  D.modulos.forEach((m, i) => {
+    const el = ed.querySelector(`[data-p="modulos.${i}.precio"]`);
+    if (!el) return;
+    el.disabled = !!D.auto;
+    if (D.auto) el.value = m.precio;
+  });
+  const h = document.getElementById("calcHint");
+  if (h) h.textContent = D.auto
+    ? `Base ${eur(c.subtotal)} + IVA ${eur(c.iva)} · ${c.horas} h · ${c.horas ? eur(Math.round(c.subtotal / c.horas * 100) / 100) : "—"}/h. Los precios de los módulos se reparten según sus horas (módulos con 0 h = incluido).`
+    : "Modo manual: escribe el precio sin IVA de cada módulo y el total se calcula solo.";
+}
+
+const ed = document.getElementById("editor");
+ed.addEventListener("input", e => {
+  const el = e.target, p = el.dataset.p; if (!p) return;
+  const t = el.dataset.t;
+  set(p, t === "bool" ? el.checked : t === "num" ? (el.value === "" ? "" : Number(el.value)) : t === "lines" ? el.value.split("\n").map(s => s.trim()).filter(Boolean) : el.value);
+  refresh(p === "auto");
+});
+ed.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.add) { get(b.dataset.add).push(NUEVOS[b.dataset.add]()); return refresh(true); }
+  const arr = get(b.dataset.arr), i = +b.dataset.i;
+  if (b.dataset.act === "del" && confirm("¿Eliminar este elemento?")) arr.splice(i, 1);
+  if (b.dataset.act === "up" && i > 0) [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
+  if (b.dataset.act === "down" && i < arr.length - 1) [arr[i + 1], arr[i]] = [arr[i], arr[i + 1]];
+  refresh(true);
+});
+
+/* ===== Acciones ===== */
+const slug = s => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^\w]+/g, "-").replace(/^-|-$/g, "").toLowerCase();
+document.getElementById("bPrint").onclick = () => window.print();
+document.getElementById("bNew").onclick = () => {
+  const ej = confirm("¿Empezar desde el ejemplo de Academia Online?\n\nAceptar = ejemplo · Cancelar = en blanco");
+  if (!confirm("Se perderán los cambios no guardados en JSON. ¿Continuar?")) return;
+  D = structuredClone(ej ? EJEMPLO : VACIO); refresh(true);
+};
+document.getElementById("bSave").onclick = () => {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(D, null, 2)], { type: "application/json" }));
+  a.download = `presupuesto-${slug(D.titulo || "majosoft")}.json`; a.click(); URL.revokeObjectURL(a.href);
+};
+const file = document.getElementById("file");
+document.getElementById("bLoad").onclick = () => file.click();
+file.onchange = async () => {
+  try { D = migrar({ ...structuredClone(VACIO), ...JSON.parse(await file.files[0].text()) }); refresh(true); }
+  catch { alert("El archivo no es un presupuesto válido."); }
+  file.value = "";
+};
+
+buildEditor(); render(); syncEditor();
+document.fonts?.ready.then(render); // las medidas cambian al cargar Inter
+</script>
+</body>
+</html>

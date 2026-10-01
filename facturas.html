@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Facturas · Majosoft</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root { --cream: #f5f4ec; --line: #dcdbd0; --ink: #15161a; --ink2: #3a3a33; --muted: #6b6b62; --lime: #d6e022; --lime2: #aebb0c; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body { font-family: Inter, system-ui, sans-serif; background: var(--cream); color: var(--ink); font-size: 14px; }
+    .topbar { display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: var(--ink); color: var(--cream); flex-wrap: wrap; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; margin-right: auto; }
+    .brand img { height: 22px; filter: invert(1); }
+    .brand span { font-weight: 500; color: #a9a99c; }
+    .topbar a { color: #a9a99c; text-decoration: none; font-size: 13px; font-weight: 600; margin-right: 6px; }
+    .topbar a:hover, .topbar a.on { color: var(--lime); }
+    .btn { border: 1px solid #3a3a33; background: transparent; color: inherit; padding: 8px 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn:hover { border-color: var(--lime); }
+    .btn--lime { background: var(--lime); color: var(--ink); border-color: var(--lime); }
+    .btn--dark { border-color: var(--line); color: var(--ink); background: #fff; }
+    .btn--dark:hover { border-color: var(--ink); }
+
+    /* ===== Panel ===== */
+    .panel { max-width: 1000px; margin: 0 auto; padding: 28px 16px 60px; }
+    .panel h1 { font-size: 28px; letter-spacing: -.03em; margin: 0 0 18px; }
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .kpi { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+    .kpi small { color: var(--muted); font-size: 12px; font-weight: 600; }
+    .kpi b { display: block; font-size: 22px; letter-spacing: -.02em; margin-top: 4px; }
+    .tools { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .tools input { flex: 1; min-width: 200px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 999px; font: inherit; }
+    table.list { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+    table.list th { text-align: left; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--line); }
+    table.list td { padding: 12px 14px; border-bottom: 1px solid #eeede5; }
+    table.list tr:last-child td { border-bottom: none; }
+    table.list tbody tr { cursor: pointer; }
+    table.list tbody tr:hover { background: #fafaf5; }
+    .r { text-align: right; white-space: nowrap; }
+    .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .pill.pendiente { background: #fff3cd; color: #7a5b00; }
+    .pill.pagada { background: var(--lime); color: var(--ink); }
+    .pill.borrador { background: #eeede5; color: var(--muted); }
+    .empty { text-align: center; padding: 40px; color: var(--muted); }
+    .scroll { overflow-x: auto; }
+
+    /* ===== Editor ===== */
+    .edit { display: grid; grid-template-columns: 420px 1fr; height: calc(100vh - 58px); }
+    .form { overflow-y: auto; padding: 18px 18px 60px; border-right: 1px solid var(--line); }
+    .prev { overflow: auto; padding: 32px; background: #dcdbd0; }
+    fieldset { border: 1px solid var(--line); background: #fff; border-radius: 14px; padding: 6px 16px 16px; margin: 0 0 10px; }
+    legend { font-weight: 700; padding: 0 6px; }
+    label.f { display: block; margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--muted); }
+    label.f input, label.f textarea, label.f select { display: block; width: 100%; margin-top: 4px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 13px; color: var(--ink); background: #fcfcf8; }
+    label.f textarea { min-height: 60px; resize: vertical; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .line { border: 1px dashed var(--line); border-radius: 10px; padding: 2px 10px 10px; margin-top: 10px; position: relative; }
+    .line .x { position: absolute; top: 6px; right: 8px; border: none; background: none; cursor: pointer; color: var(--muted); }
+    .add { margin-top: 10px; width: 100%; border: 1px dashed var(--ink2); background: transparent; padding: 8px; border-radius: 8px; cursor: pointer; font: inherit; font-weight: 600; }
+    .add:hover { background: var(--lime); }
+    .logo-prev { max-height: 40px; margin-top: 8px; display: block; }
+
+    /* ===== Factura A4 ===== */
+    .sheet { width: 210mm; height: 297mm; margin: 0 auto; background: #fff; box-shadow: 0 20px 60px rgba(21,22,26,.18); display: flex; flex-direction: column; font-size: 9.5pt; line-height: 1.5; padding: 16mm 18mm 0; position: relative; overflow: hidden; }
+    .sheet * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .s-top { background: var(--ink); color: var(--cream); margin: -16mm -18mm 0; padding: 12mm 18mm 10mm; display: flex; justify-content: space-between; align-items: flex-start; position: relative; overflow: hidden; }
+    .s-top::before { content: ""; position: absolute; width: 70mm; height: 70mm; border-radius: 50%; background: var(--lime); opacity: .14; filter: blur(30px); top: -35mm; right: -25mm; }
+    .s-top > * { position: relative; }
+    .s-top .me img { height: 22px; filter: invert(1); }
+    .s-top .me h1 { margin: 6mm 0 0; font-size: 26pt; font-weight: 900; letter-spacing: -.03em; line-height: 1; }
+    .s-top .meta { text-align: right; font-size: 9pt; color: #a9a99c; line-height: 1.6; }
+    .s-top .meta b { color: var(--lime); font-size: 13pt; display: block; margin-bottom: 2mm; }
+    .strip { display: grid; grid-template-columns: 1fr 1fr 2fr; margin-top: 8mm; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); }
+    .strip div { padding: 3.5mm 0 3.5mm 4mm; border-left: 1px solid var(--line); }
+    .strip div:first-child { border-left: none; padding-left: 0; }
+    .strip small, .lbl { display: block; font-size: 7pt; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 1mm; }
+    .strip b { font-size: 10.5pt; }
+    .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 10mm; margin-top: 9mm; color: var(--ink2); line-height: 1.6; }
+    .parties b { display: block; font-size: 11.5pt; color: var(--ink); margin-bottom: .5mm; }
+    .parties .to { text-align: right; position: relative; }
+    .parties .to img { height: 16mm; width: auto; max-width: 40mm; object-fit: contain; display: block; margin: -2mm 0 2mm auto; }
+    table.items { width: 100%; border-collapse: collapse; margin-top: 10mm; }
+    table.items th { text-align: left; font-size: 7pt; letter-spacing: .14em; text-transform: uppercase; color: var(--cream); background: var(--ink); padding: 2.6mm 3mm; font-weight: 700; }
+    table.items th:first-child { border-radius: 2mm 0 0 2mm; } table.items th:last-child { border-radius: 0 2mm 2mm 0; }
+    table.items td { padding: 4.5mm 3mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+    table.items td.n { color: var(--muted); font-weight: 700; width: 9mm; }
+    table.items td small { color: var(--muted); display: block; margin-top: .5mm; }
+    .sum { display: grid; grid-template-columns: 1fr 78mm; gap: 10mm; margin-top: 7mm; }
+    .sum .words { color: var(--muted); font-size: 8.5pt; align-self: end; }
+    .totals div { display: flex; justify-content: space-between; padding: 1.8mm 0; border-bottom: 1px solid var(--line); }
+    .totals .t { border: none; margin-top: 3mm; padding: 4mm 5mm; background: var(--ink); color: var(--cream); border-radius: 2mm; align-items: center; }
+    .totals .t span:first-child { font-size: 7.5pt; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; line-height: 1.4; }
+    .totals .t span:first-child small { display: block; color: #a9a99c; letter-spacing: .04em; text-transform: none; font-weight: 500; }
+    .totals .t span:last-child { font-size: 20pt; font-weight: 900; letter-spacing: -.03em; color: var(--lime); }
+    .s-bottom { margin-top: auto; }
+    .pay { display: grid; grid-template-columns: 1.2fr 1fr; gap: 8mm; background: var(--cream); border-radius: 3mm; padding: 6mm; }
+    .pay p { margin: 0; color: var(--ink2); }
+    .pay .iban { font-family: ui-monospace, Menlo, monospace; font-size: 10.5pt; font-weight: 700; color: var(--ink); letter-spacing: .02em; }
+    .thanks { display: flex; justify-content: space-between; align-items: end; margin: 8mm 0 6mm; }
+    .thanks b { font-size: 15pt; letter-spacing: -.02em; }
+    .thanks b i { font-style: normal; color: var(--lime2); }
+    .thanks span { font-size: 7.5pt; color: var(--muted); max-width: 85mm; text-align: right; }
+    .s-foot { display: flex; justify-content: space-between; color: var(--muted); font-size: 7.5pt; padding: 4mm 0 8mm; border-top: 1px solid var(--line); }
+
+    @media (max-width: 900px) {
+      .edit { grid-template-columns: 1fr; height: auto; }
+      .prev { padding: 16px; }
+      .sheet { zoom: .45; }
+    }
+    @page { size: A4; margin: 0; }
+    @media print {
+      body { background: #fff; }
+      .topbar, .form, .panel { display: none !important; }
+      .edit { display: block; height: auto; }
+      .prev { padding: 0; background: #fff; overflow: visible; }
+      .sheet { box-shadow: none; zoom: 1; }
+    }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><img src="assets/logo.svg" alt="Majosoft" /> Majosoft <span>· Facturas</span></div>
+    <a href="presupuestos.html">Presupuestos</a>
+    <a href="#" class="on" id="toPanel">Panel de facturas</a>
+    <span id="editBtns" hidden>
+      <button class="btn" id="bDup">Duplicar</button>
+      <button class="btn" id="bDel">Eliminar</button>
+      <button class="btn btn--lime" id="bPrint">Exportar PDF</button>
+    </span>
+  </header>
+
+  <section class="panel" id="panel">
+    <h1>Facturas</h1>
+    <div class="kpis" id="kpis"></div>
+    <div class="tools">
+      <input id="q" placeholder="Buscar por cliente, número o concepto…" />
+      <button class="btn btn--dark" id="bExport">Copia de seguridad</button>
+      <button class="btn btn--dark" id="bImport">Restaurar</button>
+      <button class="btn btn--lime" id="bNew">+ Nueva factura</button>
+      <input type="file" id="file" accept="application/json" hidden />
+    </div>
+    <div class="scroll"><table class="list">
+      <thead><tr><th>Nº</th><th>Fecha</th><th>Cliente</th><th>Concepto</th><th>Estado</th><th class="r">Total</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+  </section>
+
+  <section class="edit" id="edit" hidden>
+    <aside class="form" id="form"></aside>
+    <main class="prev"><article class="sheet" id="sheet"></article></main>
+  </section>
+
+<script>
+/* ===== Datos (se guardan en este navegador; usa «Copia de seguridad» para conservarlos) ===== */
+const KEY = "majosoft-facturas";
+const EMISOR = { nombre: "Majosoft", titular: "José Manuel Borrás Rodríguez", nif: "", direccion: "Jaén, España", email: "dev@majosoft.es", telefono: "648 867 950", iban: "" };
+
+const SEMILLA = [{
+  id: "f1", numero: "2026-001", fecha: "2026-10-01", vencimiento: "2026-10-31", estado: "pendiente",
+  cliente: { nombre: "Fisioma Úbeda", nif: "", direccion: "Úbeda, Jaén", email: "", logo: "assets/clientes/fisioma.svg" },
+  periodo: { desde: "2026-10-01", hasta: "2027-09-30" },
+  lineas: [{ concepto: "Licencia anual App de Fichaje", detalle: "fichaje.majosoft.es · Registro de jornada · Por empleado y año", cantidad: 1, precio: 30 }],
+  iva: 21, notas: "Servicio de suscripción anual. Renovación automática salvo aviso previo de 30 días.",
+  emisor: { ...EMISOR }
+}];
+
+let store;
+try { store = JSON.parse(localStorage.getItem(KEY)) || structuredClone(SEMILLA); } catch { store = structuredClone(SEMILLA); }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch {} };
+let cur = null;
+
+/* ===== Utilidades ===== */
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const eur = n => Number(n || 0).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: "always" }) + " €";
+const fecha = s => s ? new Date(s + "T00:00").toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—";
+const r2 = n => Math.round(n * 100) / 100;
+const totales = f => {
+  const base = r2(f.lineas.reduce((s, l) => s + Number(l.cantidad || 0) * Number(l.precio || 0), 0));
+  const iva = r2(base * f.iva / 100);
+  return { base, iva, total: r2(base + iva) };
+};
+const siguienteNumero = () => {
+  const y = new Date().getFullYear();
+  const n = store.filter(f => f.numero.startsWith(y + "-")).map(f => +f.numero.split("-")[1] || 0);
+  return `${y}-${String((n.length ? Math.max(...n) : 0) + 1).padStart(3, "0")}`;
+};
+
+/* ===== Panel ===== */
+function panel() {
+  cur = null;
+  document.getElementById("panel").hidden = false;
+  document.getElementById("edit").hidden = true;
+  document.getElementById("editBtns").hidden = true;
+  const q = document.getElementById("q").value.toLowerCase();
+  const lista = store.filter(f => !q || [f.numero, f.cliente.nombre, ...f.lineas.map(l => l.concepto)].join(" ").toLowerCase().includes(q))
+    .sort((a, b) => b.numero.localeCompare(a.numero));
+  const y = String(new Date().getFullYear());
+  const sum = arr => arr.reduce((s, f) => s + totales(f).total, 0);
+  const año = store.filter(f => f.fecha.startsWith(y) && f.estado !== "borrador");
+  document.getElementById("kpis").innerHTML = `
+    <div class="kpi"><small>Facturado ${y}</small><b>${eur(sum(año))}</b></div>
+    <div class="kpi"><small>Pendiente de cobro</small><b>${eur(sum(store.filter(f => f.estado === "pendiente")))}</b></div>
+    <div class="kpi"><small>Cobrado</small><b>${eur(sum(store.filter(f => f.estado === "pagada")))}</b></div>
+    <div class="kpi"><small>Facturas</small><b>${store.length}</b></div>`;
+  document.getElementById("rows").innerHTML = lista.length ? lista.map(f => `
+    <tr data-id="${f.id}"><td><b>${esc(f.numero)}</b></td><td>${fecha(f.fecha)}</td><td>${esc(f.cliente.nombre)}</td>
+    <td>${esc(f.lineas[0]?.concepto || "")}</td><td><span class="pill ${f.estado}">${f.estado}</span></td><td class="r"><b>${eur(totales(f).total)}</b></td></tr>`).join("")
+    : `<tr><td colspan="6" class="empty">No hay facturas</td></tr>`;
+}
+
+/* ===== Editor ===== */
+const fld = (label, path, type = "text") => {
+  const v = path.split(".").reduce((o, k) => o?.[k], cur) ?? "";
+  if (type === "area") return `<label class="f">${label}<textarea data-p="${path}">${esc(v)}</textarea></label>`;
+  return `<label class="f">${label}<input type="${type}" data-p="${path}" value="${esc(v)}" ${type === "number" ? 'step="0.01"' : ""}/></label>`;
+};
+
+function editar(id) {
+  cur = store.find(f => f.id === id);
+  document.getElementById("panel").hidden = true;
+  document.getElementById("edit").hidden = false;
+  document.getElementById("editBtns").hidden = false;
+  form(); sheet();
+}
+
+function form() {
+  document.getElementById("form").innerHTML = `
+    <fieldset><legend>Factura</legend>
+      <div class="row">${fld("Número", "numero")}<label class="f">Estado<select data-p="estado">${["borrador", "pendiente", "pagada"].map(e => `<option ${cur.estado === e ? "selected" : ""}>${e}</option>`).join("")}</select></label></div>
+      <div class="row">${fld("Fecha", "fecha", "date")}${fld("Vencimiento", "vencimiento", "date")}</div>
+      <div class="row">${fld("Periodo desde", "periodo.desde", "date")}${fld("Periodo hasta", "periodo.hasta", "date")}</div>
+    </fieldset>
+    <fieldset><legend>Cliente</legend>
+      ${fld("Nombre / razón social", "cliente.nombre")}
+      <div class="row">${fld("NIF / CIF", "cliente.nif")}${fld("Email", "cliente.email")}</div>
+      ${fld("Dirección", "cliente.direccion", "area")}
+      <label class="f">Logo del cliente<input type="file" accept="image/*" id="logo" /></label>
+      ${cur.cliente.logo ? `<img class="logo-prev" src="${cur.cliente.logo}" alt="" /><button class="add" id="logoDel">Quitar logo</button>` : ""}
+    </fieldset>
+    <fieldset><legend>Conceptos</legend>
+      ${cur.lineas.map((l, i) => `<div class="line"><button class="x" data-del="${i}" title="Eliminar">✕</button>
+        ${fld("Concepto", `lineas.${i}.concepto`)}${fld("Detalle", `lineas.${i}.detalle`)}
+        <div class="row">${fld("Cantidad", `lineas.${i}.cantidad`, "number")}${fld("Precio unidad (€ sin IVA)", `lineas.${i}.precio`, "number")}</div></div>`).join("")}
+      <button class="add" id="addLine">+ Añadir concepto</button>
+      ${fld("IVA (%)", "iva", "number")}
+    </fieldset>
+    <fieldset><legend>Emisor y cobro</legend>
+      <div class="row">${fld("Titular", "emisor.titular")}${fld("NIF", "emisor.nif")}</div>
+      ${fld("Dirección", "emisor.direccion")}
+      <div class="row">${fld("Email", "emisor.email")}${fld("Teléfono", "emisor.telefono")}</div>
+      ${fld("IBAN para transferencia", "emisor.iban")}
+      ${fld("Notas", "notas", "area")}
+    </fieldset>`;
+}
+
+/* Importe en letra (euros y céntimos) */
+function enLetra(n) {
+  const U = ["", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho", "diecinueve", "veinte", "veintiuno", "veintidós", "veintitrés", "veinticuatro", "veinticinco", "veintiséis", "veintisiete", "veintiocho", "veintinueve"];
+  const D = ["", "", "", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta", "noventa"];
+  const C = ["", "ciento", "doscientos", "trescientos", "cuatrocientos", "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"];
+  const c99 = x => x < 30 ? U[x] : D[Math.floor(x / 10)] + (x % 10 ? " y " + U[x % 10] : "");
+  const c999 = x => x === 100 ? "cien" : (C[Math.floor(x / 100)] + " " + c99(x % 100)).trim();
+  const ent = x => {
+    if (x === 0) return "cero";
+    const m = Math.floor(x / 1000), r = x % 1000;
+    return ((m ? (m === 1 ? "mil" : c999(m) + " mil") : "") + " " + (r ? c999(r) : "")).trim();
+  };
+  const e = Math.floor(n), c = Math.round((n - e) * 100);
+  return `${ent(e)} euros${c ? " con " + ent(c) + " céntimos" : ""}`.replace(/uno euros/, "un euros").replace(/^un euros/, "un euro");
+}
+
+function sheet() {
+  const f = cur, t = totales(f), e = f.emisor, c = f.cliente;
+  document.getElementById("sheet").innerHTML = `
+    <div class="s-top">
+      <div class="me"><img src="assets/logo.svg" alt="Majosoft" /><h1>Factura</h1></div>
+      <div class="meta"><b>Nº ${esc(f.numero)}</b>Fecha: ${fecha(f.fecha)}<br />Vencimiento: ${fecha(f.vencimiento)}</div>
+    </div>
+    <div class="parties">
+      <div><span class="lbl">Emisor</span><b>${esc(e.titular)}</b>Majosoft · Estudio de desarrollo de software<br />NIF: ${e.nif ? esc(e.nif) : "—"}<br />${esc(e.direccion)}<br />${esc(e.email)} · ${esc(e.telefono)}</div>
+      <div class="to">${c.logo ? `<img src="${c.logo}" alt="" />` : ""}<span class="lbl">Facturar a</span><b>${esc(c.nombre)}</b>NIF/CIF: ${c.nif ? esc(c.nif) : "—"}<br />${esc(c.direccion).replace(/\n/g, "<br />")}${c.email ? "<br />" + esc(c.email) : ""}</div>
+    </div>
+    <div class="strip">
+      <div><small>Fecha de emisión</small><b>${fecha(f.fecha)}</b></div>
+      <div><small>Vencimiento</small><b>${fecha(f.vencimiento)}</b></div>
+      <div><small>Periodo de servicio</small><b>${f.periodo.desde ? fecha(f.periodo.desde) + " – " + fecha(f.periodo.hasta) : "—"}</b></div>
+    </div>
+    <table class="items">
+      <thead><tr><th>#</th><th>Descripción</th><th class="r">Cant.</th><th class="r">Precio</th><th class="r">Importe</th></tr></thead>
+      <tbody>${f.lineas.map((l, i) => `<tr><td class="n">${String(i + 1).padStart(2, "0")}</td><td><b>${esc(l.concepto)}</b>${l.detalle ? `<small>${esc(l.detalle)}</small>` : ""}${f.periodo.desde ? `<small>Del ${fecha(f.periodo.desde)} al ${fecha(f.periodo.hasta)}</small>` : ""}</td><td class="r">${l.cantidad}</td><td class="r">${eur(l.precio)}</td><td class="r"><b>${eur(l.cantidad * l.precio)}</b></td></tr>`).join("")}</tbody>
+    </table>
+    <div class="sum">
+      <div class="words"><span class="lbl">Importe en letra</span>${enLetra(t.total)}</div>
+      <div class="totals">
+        <div><span>Base imponible</span><span>${eur(t.base)}</span></div>
+        <div><span>IVA ${f.iva}%</span><span>${eur(t.iva)}</span></div>
+        <div class="t"><span>Total a pagar<small>IVA incluido</small></span><span>${eur(t.total)}</span></div>
+      </div>
+    </div>
+    <div class="s-bottom">
+      <div class="pay">
+        <div><span class="lbl">Forma de pago</span><p>Transferencia bancaria antes del ${fecha(f.vencimiento)}</p>
+          ${e.iban ? `<p class="iban" style="margin-top:2mm">${esc(e.iban)}</p>` : `<p style="margin-top:2mm;color:var(--muted)">IBAN pendiente de indicar</p>`}
+          <p style="margin-top:2mm">Concepto: <b>Factura ${esc(f.numero)}</b></p></div>
+        ${f.notas ? `<div><span class="lbl">Condiciones</span><p>${esc(f.notas)}</p></div>` : ""}
+      </div>
+      <div class="thanks"><b>Gracias por confiar en Majosoft<i>.</i></b>
+        <span>Conforme al Reglamento (UE) 2016/679, sus datos se tratan únicamente para la gestión administrativa y contable de esta relación comercial.</span></div>
+      <div class="s-foot"><span>Majosoft · Estudio de desarrollo de software · majosoft.es</span><span>Factura ${esc(f.numero)} · Página 1 de 1</span></div>
+    </div>`;
+  document.title = `Factura ${f.numero} · ${f.cliente.nombre}`;
+}
+
+/* ===== Eventos ===== */
+const formEl = document.getElementById("form");
+formEl.addEventListener("input", ev => {
+  const p = ev.target.dataset.p; if (!p) return;
+  const ks = p.split("."), last = ks.pop(), o = ks.reduce((o, k) => o[k], cur);
+  o[last] = ev.target.type === "number" ? Number(ev.target.value) : ev.target.value;
+  if (p === "emisor.nif" || p === "emisor.iban") Object.assign(EMISOR, { [last]: ev.target.value });
+  sheet(); save();
+});
+formEl.addEventListener("change", async ev => {
+  if (ev.target.id !== "logo" || !ev.target.files[0]) return;
+  const fr = new FileReader();
+  fr.onload = () => { cur.cliente.logo = fr.result; form(); sheet(); save(); };
+  fr.readAsDataURL(ev.target.files[0]);
+});
+formEl.addEventListener("click", ev => {
+  if (ev.target.id === "addLine") { cur.lineas.push({ concepto: "", detalle: "", cantidad: 1, precio: 0 }); }
+  else if (ev.target.id === "logoDel") { cur.cliente.logo = ""; }
+  else if (ev.target.dataset.del != null) { cur.lineas.splice(+ev.target.dataset.del, 1); }
+  else return;
+  form(); sheet(); save();
+});
+
+document.getElementById("rows").onclick = ev => { const tr = ev.target.closest("tr[data-id]"); if (tr) editar(tr.dataset.id); };
+document.getElementById("q").oninput = panel;
+document.getElementById("toPanel").onclick = ev => { ev.preventDefault(); panel(); };
+document.getElementById("bPrint").onclick = () => window.print();
+document.getElementById("bNew").onclick = () => {
+  const ult = store.at(-1);
+  const hoy = new Date().toISOString().slice(0, 10);
+  const f = { id: "f" + Date.now(), numero: siguienteNumero(), fecha: hoy, vencimiento: "", estado: "borrador",
+    cliente: { nombre: "Nuevo cliente", nif: "", direccion: "", email: "", logo: "" }, periodo: { desde: "", hasta: "" },
+    lineas: [{ concepto: "", detalle: "", cantidad: 1, precio: 0 }], iva: 21, notas: "", emisor: { ...(ult?.emisor || EMISOR) } };
+  store.push(f); save(); editar(f.id);
+};
+document.getElementById("bDup").onclick = () => {
+  const f = { ...structuredClone(cur), id: "f" + Date.now(), numero: siguienteNumero(), estado: "borrador", fecha: new Date().toISOString().slice(0, 10) };
+  store.push(f); save(); editar(f.id);
+};
+document.getElementById("bDel").onclick = () => {
+  if (!confirm(`¿Eliminar la factura ${cur.numero}?`)) return;
+  store = store.filter(f => f !== cur); save(); panel();
+};
+document.getElementById("bExport").onclick = () => {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(store, null, 2)], { type: "application/json" }));
+  a.download = `facturas-majosoft-${new Date().toISOString().slice(0, 10)}.json`; a.click(); URL.revokeObjectURL(a.href);
+};
+const file = document.getElementById("file");
+document.getElementById("bImport").onclick = () => file.click();
+file.onchange = async () => {
+  try { const d = JSON.parse(await file.files[0].text()); if (!Array.isArray(d)) throw 0; if (confirm("Esto reemplaza las facturas de este navegador. ¿Continuar?")) { store = d; save(); panel(); } }
+  catch { alert("El archivo no es una copia válida."); }
+  file.value = "";
+};
+
+const abrir = store.find(f => "#" + f.id === location.hash);
+abrir ? editar(abrir.id) : panel();
+</script>
+</body>
+</html>
