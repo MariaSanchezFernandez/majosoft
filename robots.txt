@@ -1,6 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /presupuestos.html
-Disallow: /facturas.html
+Disallow: /admin/
 
 Sitemap: https://majosoft.es/sitemap.xml

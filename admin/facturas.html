@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Facturas · Majosoft</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -125,8 +125,8 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand"><img src="assets/logo.svg" alt="Majosoft" /> Majosoft <span>· Facturas</span></div>
-    <a href="presupuestos.html">Presupuestos</a>
+    <a class="brand" href="./" style="color:inherit;text-decoration:none"><img src="../assets/logo.svg" alt="Majosoft" /> Majosoft <span>· Facturas</span></a>
+    <a href="presupuestos">Presupuestos</a>
     <a href="#" class="on" id="toPanel">Panel de facturas</a>
     <span id="editBtns" hidden>
       <button class="btn" id="bDup">Duplicar</button>
@@ -163,7 +163,7 @@ const EMISOR = { nombre: "Majosoft", titular: "José Manuel Borrás Rodríguez",
 
 const SEMILLA = [{
   id: "f1", numero: "2026-001", fecha: "2026-10-01", vencimiento: "2026-10-31", estado: "pendiente",
-  cliente: { nombre: "Fisioma Úbeda", nif: "", direccion: "Úbeda, Jaén", email: "", logo: "assets/clientes/fisioma.svg" },
+  cliente: { nombre: "Fisioma Úbeda", nif: "", direccion: "Úbeda, Jaén", email: "", logo: "../assets/clientes/fisioma.svg" },
   periodo: { desde: "2026-10-01", hasta: "2027-09-30" },
   lineas: [{ concepto: "Licencia anual App de Fichaje", detalle: "fichaje.majosoft.es · Registro de jornada · Por empleado y año", cantidad: 1, precio: 30 }],
   iva: 21, notas: "Servicio de suscripción anual. Renovación automática salvo aviso previo de 30 días.",
@@ -279,7 +279,7 @@ function sheet() {
   const f = cur, t = totales(f), e = f.emisor, c = f.cliente;
   document.getElementById("sheet").innerHTML = `
     <div class="s-top">
-      <div class="me"><img src="assets/logo.svg" alt="Majosoft" /><h1>Factura</h1></div>
+      <div class="me"><img src="../assets/logo.svg" alt="Majosoft" /><h1>Factura</h1></div>
       <div class="meta"><b>Nº ${esc(f.numero)}</b>Fecha: ${fecha(f.fecha)}<br />Vencimiento: ${fecha(f.vencimiento)}</div>
     </div>
     <div class="parties">

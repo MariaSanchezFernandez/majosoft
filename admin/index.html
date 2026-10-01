@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel · Majosoft</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root { --cream: #f5f4ec; --line: #dcdbd0; --ink: #15161a; --muted: #6b6b62; --lime: #d6e022; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: var(--cream); color: var(--ink); }
+    .topbar { display: flex; align-items: center; gap: 10px; padding: 14px 20px; background: var(--ink); color: var(--cream); }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; margin-right: auto; }
+    .brand img { height: 22px; filter: invert(1); }
+    .brand span { font-weight: 500; color: #a9a99c; }
+    .topbar a { color: #a9a99c; text-decoration: none; font-size: 13px; font-weight: 600; }
+    .topbar a:hover { color: var(--lime); }
+    main { max-width: 1000px; margin: 0 auto; padding: 36px 16px 60px; }
+    h1 { font-size: 34px; letter-spacing: -.035em; margin: 0; }
+    .sub { color: var(--muted); margin: 6px 0 26px; }
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 26px; }
+    .kpi { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+    .kpi small { color: var(--muted); font-size: 12px; font-weight: 600; }
+    .kpi b { display: block; font-size: 22px; letter-spacing: -.02em; margin-top: 4px; }
+    .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .tool { display: block; text-decoration: none; color: inherit; background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 26px; transition: transform .2s, box-shadow .2s, border-color .2s; }
+    .tool:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(21,22,26,.1); border-color: var(--ink); }
+    .tool .ic { width: 44px; height: 44px; border-radius: 12px; background: var(--ink); color: var(--lime); display: grid; place-items: center; font-weight: 900; font-size: 20px; }
+    .tool h2 { margin: 18px 0 6px; font-size: 22px; letter-spacing: -.02em; }
+    .tool p { margin: 0; color: var(--muted); line-height: 1.5; }
+    .tool span { display: inline-block; margin-top: 16px; font-weight: 700; font-size: 14px; border-bottom: 2px solid var(--lime); }
+    .recent { margin-top: 30px; background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 8px 20px; }
+    .recent h3 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 14px 0 6px; }
+    .recent a { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid #eeede5; color: inherit; text-decoration: none; }
+    .recent a:hover b { text-decoration: underline; }
+    .recent .empty { color: var(--muted); padding: 12px 0 16px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><img src="../assets/logo.svg" alt="Majosoft" /> Majosoft <span>· Panel</span></div>
+    <a href="../">Ver la web ↗</a>
+  </header>
+  <main>
+    <h1>Panel de administración</h1>
+    <p class="sub">Presupuestos y facturación de Majosoft.</p>
+    <div class="kpis" id="kpis"></div>
+    <div class="tools">
+      <a class="tool" href="presupuestos"><div class="ic">P</div><h2>Presupuestos</h2><p>Maquetador de propuestas con cálculo automático desde el precio con IVA y exportación a PDF en hojas A4.</p><span>Abrir presupuestos →</span></a>
+      <a class="tool" href="facturas"><div class="ic">F</div><h2>Facturas</h2><p>Emisión de facturas con numeración automática, estados de cobro y exportación a PDF.</p><span>Abrir facturas →</span></a>
+    </div>
+    <div class="recent" id="recent"></div>
+  </main>
+<script>
+const eur = n => Number(n || 0).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: "always" }) + " €";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let fac = [], pre = null;
+try { fac = JSON.parse(localStorage.getItem("majosoft-facturas")) || []; } catch {}
+try { pre = JSON.parse(localStorage.getItem("majosoft-presupuesto")); } catch {}
+const total = f => { const b = f.lineas.reduce((s, l) => s + l.cantidad * l.precio, 0); return Math.round(b * (1 + f.iva / 100) * 100) / 100; };
+const sum = a => a.reduce((s, f) => s + total(f), 0);
+const y = String(new Date().getFullYear());
+document.getElementById("kpis").innerHTML = `
+  <div class="kpi"><small>Facturado ${y}</small><b>${eur(sum(fac.filter(f => f.fecha.startsWith(y) && f.estado !== "borrador")))}</b></div>
+  <div class="kpi"><small>Pendiente de cobro</small><b>${eur(sum(fac.filter(f => f.estado === "pendiente")))}</b></div>
+  <div class="kpi"><small>Facturas</small><b>${fac.length}</b></div>
+  <div class="kpi"><small>Presupuesto en curso</small><b style="font-size:15px;line-height:1.4">${pre ? esc(pre.titulo) : "—"}</b></div>`;
+const ult = [...fac].sort((a, b) => b.numero.localeCompare(a.numero)).slice(0, 5);
+document.getElementById("recent").innerHTML = `<h3>Últimas facturas</h3>` + (ult.length
+  ? ult.map(f => `<a href="facturas#${f.id}"><b>${esc(f.numero)} · ${esc(f.cliente.nombre)}</b><span>${eur(total(f))} · ${f.estado}</span></a>`).join("")
+  : `<div class="empty">Aún no hay facturas en este navegador.</div>`);
+</script>
+</body>
+</html>
