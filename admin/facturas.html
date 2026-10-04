@@ -71,11 +71,15 @@
     .s-top { background: var(--ink); color: var(--cream); margin: -16mm -18mm 0; padding: 12mm 18mm 10mm; display: flex; justify-content: space-between; align-items: flex-start; position: relative; overflow: hidden; }
     .s-top::before { content: ""; position: absolute; width: 70mm; height: 70mm; border-radius: 50%; background: var(--lime); opacity: .14; filter: blur(30px); top: -35mm; right: -25mm; }
     .s-top > * { position: relative; }
-    .s-top .me img { height: 22px; filter: invert(1); }
-    .s-top .me h1 { margin: 6mm 0 0; font-size: 26pt; font-weight: 900; letter-spacing: -.03em; line-height: 1; }
+    .s-top .me .mark { display: flex; align-items: center; gap: 3mm; }
+    .s-top .me img { height: 30px; filter: invert(1); }
+    .s-top .me .mark span { font-size: 15pt; font-weight: 800; letter-spacing: -.03em; }
+    .s-top .me .mark i { font-style: normal; color: var(--lime); }
+    .s-top .me h1 { margin: 7mm 0 0; font-size: 34pt; font-weight: 900; letter-spacing: -.03em; line-height: 1; }
     .s-top .meta { text-align: right; font-size: 9pt; color: #a9a99c; line-height: 1.6; }
-    .s-top .meta b { color: var(--lime); font-size: 13pt; display: block; margin-bottom: 2mm; }
+    .s-top .meta b { color: var(--lime); font-size: 16pt; display: block; margin-bottom: 2mm; }
     .strip { display: grid; grid-template-columns: 1fr 1fr 2fr; margin-top: 8mm; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); }
+    .strip--2 { grid-template-columns: 1fr 3fr; }
     .strip div { padding: 3.5mm 0 3.5mm 4mm; border-left: 1px solid var(--line); }
     .strip div:first-child { border-left: none; padding-left: 0; }
     .strip small, .lbl { display: block; font-size: 7pt; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 1mm; }
@@ -97,7 +101,7 @@
     .totals .t span:first-child { font-size: 7.5pt; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; line-height: 1.4; }
     .totals .t span:first-child small { display: block; color: #a9a99c; letter-spacing: .04em; text-transform: none; font-weight: 500; }
     .totals .t span:last-child { font-size: 20pt; font-weight: 900; letter-spacing: -.03em; color: var(--lime); }
-    .s-bottom { margin-top: auto; }
+    .s-bottom { margin-top: auto; padding-top: 7mm; }
     .pay { display: grid; grid-template-columns: 1.2fr 1fr; gap: 8mm; background: var(--cream); border-radius: 3mm; padding: 6mm; }
     .pay p { margin: 0; color: var(--ink2); }
     .pay .iban { font-family: ui-monospace, Menlo, monospace; font-size: 10.5pt; font-weight: 700; color: var(--ink); letter-spacing: .02em; }
@@ -168,11 +172,27 @@ const SEMILLA = [{
   lineas: [{ concepto: "Licencia anual App de Fichaje", detalle: "fichaje.majosoft.es · Registro de jornada · Por empleado y año", cantidad: 1, precio: 30 }],
   iva: 21, notas: "Servicio de suscripción anual. Renovación automática salvo aviso previo de 30 días.",
   emisor: { ...EMISOR }
+}, {
+  id: "f100", numero: "100", fecha: "2026-10-04", vencimiento: "", estado: "pendiente",
+  cliente: { nombre: "Nombre del cliente", nif: "", direccion: "", email: "", logo: "" },
+  periodo: { desde: "", hasta: "" }, resumen: "Proyecto + 2 meses de mantenimiento",
+  lineas: [
+    { concepto: "Desarrollo de proyecto", detalle: "Importe con IVA incluido: 4.950,00 €", cantidad: 1, precio: 4090.91 },
+    { concepto: "Mantenimiento mensual", detalle: "2 meses · 75,00 € / mes", cantidad: 2, precio: 75 }
+  ],
+  iva: 21, notas: "",
+  emisor: { ...EMISOR }
 }];
 
 let store;
 try { store = JSON.parse(localStorage.getItem(KEY)) || structuredClone(SEMILLA); } catch { store = structuredClone(SEMILLA); }
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch {} };
+try {
+  const vistas = JSON.parse(localStorage.getItem(KEY + "-semilla")) || store.map(f => f.id);
+  const nuevas = SEMILLA.filter(f => !vistas.includes(f.id) && !store.some(g => g.id === f.id));
+  if (nuevas.length) { store.push(...structuredClone(nuevas)); save(); }
+  localStorage.setItem(KEY + "-semilla", JSON.stringify(SEMILLA.map(f => f.id)));
+} catch {}
 let cur = null;
 
 /* ===== Utilidades ===== */
@@ -235,6 +255,7 @@ function form() {
       <div class="row">${fld("Número", "numero")}<label class="f">Estado<select data-p="estado">${["borrador", "pendiente", "pagada"].map(e => `<option ${cur.estado === e ? "selected" : ""}>${e}</option>`).join("")}</select></label></div>
       <div class="row">${fld("Fecha", "fecha", "date")}${fld("Vencimiento", "vencimiento", "date")}</div>
       <div class="row">${fld("Periodo desde", "periodo.desde", "date")}${fld("Periodo hasta", "periodo.hasta", "date")}</div>
+      ${fld("Resumen (si no hay periodo)", "resumen")}
     </fieldset>
     <fieldset><legend>Cliente</legend>
       ${fld("Nombre / razón social", "cliente.nombre")}
@@ -279,17 +300,19 @@ function sheet() {
   const f = cur, t = totales(f), e = f.emisor, c = f.cliente;
   document.getElementById("sheet").innerHTML = `
     <div class="s-top">
-      <div class="me"><img src="../assets/logo.svg" alt="Majosoft" /><h1>Factura</h1></div>
-      <div class="meta"><b>Nº ${esc(f.numero)}</b>Fecha: ${fecha(f.fecha)}<br />Vencimiento: ${fecha(f.vencimiento)}</div>
+      <div class="me"><div class="mark"><img src="../assets/logo.svg" alt="" /><span>majosoft<i>.</i></span></div><h1>Factura</h1></div>
+      <div class="meta"><b>Nº ${esc(f.numero)}</b>Fecha: ${fecha(f.fecha)}${f.vencimiento ? `<br />Vencimiento: ${fecha(f.vencimiento)}` : ""}</div>
     </div>
     <div class="parties">
       <div><span class="lbl">Emisor</span><b>${esc(e.titular)}</b>Majosoft · Estudio de desarrollo de software<br />NIF: ${e.nif ? esc(e.nif) : "—"}<br />${esc(e.direccion)}<br />${esc(e.email)} · ${esc(e.telefono)}</div>
       <div class="to">${c.logo ? `<img src="${c.logo}" alt="" />` : ""}<span class="lbl">Facturar a</span><b>${esc(c.nombre)}</b>NIF/CIF: ${c.nif ? esc(c.nif) : "—"}<br />${esc(c.direccion).replace(/\n/g, "<br />")}${c.email ? "<br />" + esc(c.email) : ""}</div>
     </div>
-    <div class="strip">
+    <div class="strip${f.vencimiento ? "" : " strip--2"}">
       <div><small>Fecha de emisión</small><b>${fecha(f.fecha)}</b></div>
-      <div><small>Vencimiento</small><b>${fecha(f.vencimiento)}</b></div>
-      <div><small>Periodo de servicio</small><b>${f.periodo.desde ? fecha(f.periodo.desde) + " – " + fecha(f.periodo.hasta) : "—"}</b></div>
+      ${f.vencimiento ? `<div><small>Vencimiento</small><b>${fecha(f.vencimiento)}</b></div>` : ""}
+      ${f.periodo.desde || !f.resumen
+        ? `<div><small>Periodo de servicio</small><b>${f.periodo.desde ? fecha(f.periodo.desde) + " – " + fecha(f.periodo.hasta) : "—"}</b></div>`
+        : `<div><small>Concepto</small><b>${esc(f.resumen)}</b></div>`}
     </div>
     <table class="items">
       <thead><tr><th>#</th><th>Descripción</th><th class="r">Cant.</th><th class="r">Precio</th><th class="r">Importe</th></tr></thead>
@@ -305,7 +328,7 @@ function sheet() {
     </div>
     <div class="s-bottom">
       <div class="pay">
-        <div><span class="lbl">Forma de pago</span><p>Transferencia bancaria antes del ${fecha(f.vencimiento)}</p>
+        <div><span class="lbl">Forma de pago</span><p>Transferencia bancaria${f.vencimiento ? ` antes del ${fecha(f.vencimiento)}` : ""}</p>
           ${e.iban ? `<p class="iban" style="margin-top:2mm">${esc(e.iban)}</p>` : `<p style="margin-top:2mm;color:var(--muted)">IBAN pendiente de indicar</p>`}
           <p style="margin-top:2mm">Concepto: <b>Factura ${esc(f.numero)}</b></p></div>
         ${f.notas ? `<div><span class="lbl">Condiciones</span><p>${esc(f.notas)}</p></div>` : ""}
