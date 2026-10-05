@@ -52,7 +52,7 @@
     <img src="/assets/logo.svg" alt="Majosoft" />
     <h2>Panel de gestión <i>Majosoft</i>.</h2>
     <p>Presupuestos, facturación y control de la actividad del estudio en un único espacio privado.</p>
-    <div class="badges"><span>Cifrado HTTPS</span><span>Verificación en dos pasos</span><span>Registro de accesos</span></div>
+    <div class="badges"><span>Cifrado HTTPS</span><span>Verificación en dos pasos opcional</span><span>Registro de accesos</span></div>
   </section>
 
   <section class="form-wrap">
@@ -118,6 +118,7 @@ async function busy(form, fn) {
 $("f1").onsubmit = e => { e.preventDefault(); busy($("f1"), async () => {
   const { step } = await post("login", { email: $("email").value, password: $("pw").value });
   $("pw").value = "";
+  if (step === "done") { location.href = "/admin/"; return; }
   if (step === "totp") { show("f2"); $("code").focus(); return; }
   const r = await fetch("/admin/api/login/setup", { credentials: "same-origin" });
   const d = await r.json(); if (!r.ok) throw new Error(d.error);

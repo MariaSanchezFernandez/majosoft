@@ -22,6 +22,12 @@
     .status { display: flex; flex-direction: column; gap: 10px; }
     .status div { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--cream); font-weight: 600; font-size: 13px; }
     .ok { color: var(--ok); } .ok::before { content: "● "; }
+    .off { color: var(--muted); } .off::before { content: "○ "; }
+    .btn.light { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+    .qr { display: flex; gap: 16px; align-items: center; margin-top: 12px; }
+    .qr img { width: 150px; height: 150px; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 10px; }
+    .qr code { display: block; margin-top: 6px; font-size: 12px; font-weight: 700; word-break: break-all; }
+    input.code { text-align: center; font-size: 22px; letter-spacing: .3em; font-weight: 800; max-width: 200px; }
     label { display: block; font-size: 12px; font-weight: 700; margin: 10px 0 5px; color: var(--muted); }
     input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font: inherit; }
     input:focus { outline: 3px solid rgba(214,224,34,.5); border-color: var(--ink); }
@@ -43,7 +49,7 @@
       <div class="card">
         <h2>Estado de la protección</h2><p class="sub">Medidas activas en el panel.</p>
         <div class="status">
-          <div>Verificación en dos pasos <span class="ok">Activa</span></div>
+          <div>Verificación en dos pasos <span id="tfaState"></span></div>
           <div>Contraseña cifrada (scrypt) <span class="ok">Activa</span></div>
           <div>Bloqueo tras 5 intentos fallidos <span class="ok">15 min</span></div>
           <div>Cierre por inactividad <span class="ok">60 min</span></div>
@@ -59,6 +65,11 @@
           <button class="btn">Actualizar contraseña</button>
         </form>
       </div>
+      <div class="card wide" id="tfaCard">
+        <h2>Verificación en dos pasos</h2>
+        <p class="sub" id="tfaSub"></p>
+        <div id="tfaBody"></div>
+      </div>
       <div class="card wide">
         <h2>Sesiones abiertas</h2><p class="sub">Dispositivos con acceso ahora mismo. Cierra cualquiera que no reconozcas.</p>
         <div class="scroll"><table><thead><tr><th>Dispositivo</th><th>IP</th><th>Inicio</th><th>Última actividad</th><th></th></tr></thead><tbody id="sessions"></tbody></table></div>
@@ -71,12 +82,12 @@
   </main>
 <script type="module">
 import { mountShell, api, toast } from "/admin/panel.js";
-await mountShell("seguridad");
+let me = await mountShell("seguridad");
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const when = t => new Date(t).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 const device = ua => /iPhone|iPad/.test(ua) ? "iPhone / iPad" : /Android/.test(ua) ? "Android" : /Mac OS/.test(ua) ? "Mac" : /Windows/.test(ua) ? "Windows" : "Otro";
 const browser = ua => /Edg\//.test(ua) ? "Edge" : /Chrome\//.test(ua) ? "Chrome" : /Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : "";
-const EV = { login_ok: "Inicio de sesión", login_fail: "Intento fallido", account_locked: "Cuenta bloqueada", logout: "Cierre de sesión", "2fa_enabled": "2FA activada", password_changed: "Contraseña cambiada", doc_created: "Documento creado", doc_deleted: "Documento eliminado", session_revoked: "Sesión revocada", user_created: "Usuario creado", "2fa_reset": "2FA reiniciada" };
+const EV = { login_ok: "Inicio de sesión", login_fail: "Intento fallido", account_locked: "Cuenta bloqueada", logout: "Cierre de sesión", "2fa_enabled": "2FA activada", password_changed: "Contraseña cambiada", doc_created: "Documento creado", doc_deleted: "Documento eliminado", session_revoked: "Sesión revocada", user_created: "Usuario creado", "2fa_reset": "2FA reiniciada", "2fa_disabled": "2FA desactivada" };
 
 async function load() {
   const d = await api("security");
@@ -98,6 +109,34 @@ document.getElementById("pw").onsubmit = async e => {
   try { await api("password", { method: "POST", body: { current: cur, next: n1 } }); e.target.reset(); toast("Contraseña actualizada"); load(); }
   catch (err) { toast(err.message, true); }
 };
+
+/* ===== Verificación en dos pasos (opcional) ===== */
+const $ = id => document.getElementById(id);
+function tfa() {
+  $("tfaState").className = me.totp ? "ok" : "off";
+  $("tfaState").textContent = me.totp ? "Activa" : "Desactivada";
+  if (me.totp) {
+    $("tfaSub").textContent = "Activa: al entrar se pide también un código de tu app de autenticación.";
+    $("tfaBody").innerHTML = `<form id="tfaOff"><label>Tu contraseña, para desactivarla</label><input type="password" id="tfaPw" autocomplete="current-password" required style="max-width:320px" /><br /><button class="btn light">Desactivar verificación</button></form>`;
+    $("tfaOff").onsubmit = async e => { e.preventDefault();
+      try { await api("2fa/disable", { method: "POST", body: { password: $("tfaPw").value } }); me.totp = false; toast("Verificación desactivada"); tfa(); load(); }
+      catch (err) { toast(err.message, true); } };
+  } else {
+    $("tfaSub").textContent = "Opcional. Añade un código de tu móvil (Google Authenticator, Microsoft Authenticator, 1Password…) además de la contraseña.";
+    $("tfaBody").innerHTML = `<button class="btn" id="tfaStart">Activar verificación</button>`;
+    $("tfaStart").onclick = async () => {
+      const d = await api("2fa/setup");
+      $("tfaBody").innerHTML = `<p class="sub">1. Escanea el código con tu app. 2. Escribe el código de 6 dígitos que aparece.</p>
+        <div class="qr"><img src="${d.qr}" alt="Código QR" /><div><small>Clave manual</small><code>${d.secret}</code></div></div>
+        <form id="tfaOn"><label>Código de la app</label><input class="code" id="tfaCode" inputmode="numeric" maxlength="6" required /><br /><button class="btn">Confirmar y activar</button> <button class="btn light" type="button" id="tfaCancel">Cancelar</button></form>`;
+      $("tfaCancel").onclick = tfa;
+      $("tfaOn").onsubmit = async e => { e.preventDefault();
+        try { await api("2fa/enable", { method: "POST", body: { code: $("tfaCode").value } }); me.totp = true; toast("Verificación activada"); tfa(); load(); }
+        catch (err) { toast(err.message, true); } };
+    };
+  }
+}
+tfa();
 </script>
 </body>
 </html>

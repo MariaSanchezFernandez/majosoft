@@ -112,10 +112,12 @@ app.post("/admin/api/login", (req, res) => {
     registerFailure(user, req, "contraseña");
     return res.status(401).json({ error: "Correo o contraseña incorrectos" });
   }
+  // La verificación en dos pasos es opcional: sin ella activada se entra directamente
+  if (!user.totp_enabled) { startSession(req, res, user); return res.json({ step: "done" }); }
   const pre = newToken();
-  pending.set(sha256(pre), { userId: user.id, exp: Date.now() + PRE_TTL, secret: user.totp_enabled ? null : newTotpSecret() });
+  pending.set(sha256(pre), { userId: user.id, exp: Date.now() + PRE_TTL, secret: null });
   setCookie(res, PRE_COOKIE, pre, PRE_TTL);
-  res.json({ step: user.totp_enabled ? "totp" : "setup" });
+  res.json({ step: "totp" });
 });
 
 function takePending(req) {
@@ -170,7 +172,36 @@ app.get("/admin/panel.css", (req, res) => res.sendFile(path.join(PUBLIC, "panel.
 /* ===== A partir de aquí, todo requiere sesión ===== */
 app.use("/admin", requireAuth);
 
-app.get("/admin/api/me", (req, res) => res.json(req.session.user));
+app.get("/admin/api/me", (req, res) => {
+  const u = db.prepare("SELECT totp_enabled FROM users WHERE id = ?").get(req.session.user.id);
+  res.json({ ...req.session.user, totp: !!u.totp_enabled });
+});
+
+/* ===== Verificación en dos pasos (opcional, desde Seguridad) ===== */
+const setupSecrets = new Map(); // userId -> { secret, exp }
+app.get("/admin/api/2fa/setup", async (req, res) => {
+  const secret = newTotpSecret();
+  setupSecrets.set(req.session.user.id, { secret, exp: Date.now() + 10 * 60e3 });
+  const qr = await QRCode.toDataURL(totpUri(secret, req.session.user.email), { margin: 1, width: 220 });
+  res.json({ qr, secret: secret.match(/.{1,4}/g).join(" ") });
+});
+app.post("/admin/api/2fa/enable", (req, res) => {
+  const p = setupSecrets.get(req.session.user.id);
+  if (!p || p.exp < Date.now()) return res.status(400).json({ error: "Vuelve a generar el código QR" });
+  const counter = verifyTotp(p.secret, req.body?.code);
+  if (counter === null) return res.status(400).json({ error: "Código incorrecto o caducado" });
+  db.prepare("UPDATE users SET totp_secret = ?, totp_enabled = 1, totp_last_counter = ? WHERE id = ?").run(p.secret, counter, req.session.user.id);
+  setupSecrets.delete(req.session.user.id);
+  audit("2fa_enabled", { user: req.session.user, ip: req.ip });
+  res.json({ ok: true });
+});
+app.post("/admin/api/2fa/disable", (req, res) => {
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(req.session.user.id);
+  if (!verifyPassword(String(req.body?.password || ""), user.password_hash)) return res.status(400).json({ error: "La contraseña no es correcta" });
+  db.prepare("UPDATE users SET totp_secret = NULL, totp_enabled = 0, totp_last_counter = -1 WHERE id = ?").run(user.id);
+  audit("2fa_disabled", { user: req.session.user, ip: req.ip });
+  res.json({ ok: true });
+});
 
 app.get("/admin/api/security", (req, res) => {
   const uid = req.session.user.id;
