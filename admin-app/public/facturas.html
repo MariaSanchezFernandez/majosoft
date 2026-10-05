@@ -74,11 +74,11 @@
     .s-top { background: var(--ink); color: var(--cream); margin: -16mm -18mm 0; padding: 12mm 18mm 10mm; display: flex; justify-content: space-between; align-items: flex-start; position: relative; overflow: hidden; }
     .s-top::before { content: ""; position: absolute; width: 70mm; height: 70mm; border-radius: 50%; background: var(--lime); opacity: .14; filter: blur(30px); top: -35mm; right: -25mm; }
     .s-top > * { position: relative; }
-    .s-top .me .mark { display: flex; align-items: center; gap: 3mm; }
-    .s-top .me img { height: 30px; filter: invert(1); }
-    .s-top .me .mark span { font-size: 15pt; font-weight: 800; letter-spacing: -.03em; }
+    .s-top .me .mark { display: flex; align-items: center; gap: 2mm; }
+    .s-top .me img { height: 18px; filter: invert(1); }
+    .s-top .me .mark span { font-size: 10.5pt; font-weight: 800; letter-spacing: -.03em; }
     .s-top .me .mark i { font-style: normal; color: var(--lime); }
-    .s-top .me h1 { margin: 7mm 0 0; font-size: 34pt; font-weight: 900; letter-spacing: -.03em; line-height: 1; }
+    .s-top .me h1 { margin: 5mm 0 0; font-size: 20pt; font-weight: 900; letter-spacing: -.03em; line-height: 1; }
     .s-top .meta { text-align: right; font-size: 9pt; color: #a9a99c; line-height: 1.6; }
     .s-top .meta b { color: var(--lime); font-size: 16pt; display: block; margin-bottom: 2mm; }
     .strip { display: grid; grid-template-columns: 1fr 1fr 2fr; margin-top: 8mm; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); }
@@ -90,7 +90,7 @@
     .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 10mm; margin-top: 9mm; color: var(--ink2); line-height: 1.6; }
     .parties b { display: block; font-size: 11.5pt; color: var(--ink); margin-bottom: .5mm; }
     .parties .to { text-align: right; position: relative; }
-    .parties .to img { height: 16mm; width: auto; max-width: 40mm; object-fit: contain; display: block; margin: -2mm 0 2mm auto; }
+    .parties .to img { height: 11mm; width: auto; max-width: 40mm; object-fit: contain; display: block; margin: -2mm 0 2mm auto; }
     table.items { width: 100%; border-collapse: collapse; margin-top: 10mm; }
     table.items th { text-align: left; font-size: 7pt; letter-spacing: .14em; text-transform: uppercase; color: var(--cream); background: var(--ink); padding: 2.6mm 3mm; font-weight: 700; }
     table.items th:first-child { border-radius: 2mm 0 0 2mm; } table.items th:last-child { border-radius: 0 2mm 2mm 0; }
@@ -171,14 +171,14 @@ await mountShell("facturas");
 const EMISOR = { nombre: "Majosoft", titular: "José Manuel Borrás Rodríguez", nif: "", direccion: "Jaén, España", email: "dev@majosoft.es", telefono: "648 867 950", iban: "" };
 
 const SEMILLA = [{
-  id: "f1", numero: "2026-001", fecha: "2026-10-01", vencimiento: "2026-10-31", estado: "pendiente",
+  id: "f1", numero: "01", fecha: "2026-10-01", vencimiento: "2026-10-31", estado: "pendiente",
   cliente: { nombre: "Fisioma Úbeda", nif: "", direccion: "Úbeda, Jaén", email: "", logo: "/assets/clientes/fisioma.svg" },
   periodo: { desde: "2026-10-01", hasta: "2027-09-30" },
   lineas: [{ concepto: "Licencia anual App de Fichaje", detalle: "fichaje.majosoft.es · Registro de jornada · Por empleado y año", cantidad: 1, precio: 30 }],
   iva: 21, notas: "Servicio de suscripción anual. Renovación automática salvo aviso previo de 30 días.",
   emisor: { ...EMISOR }
 }, {
-  id: "f100", numero: "100", fecha: "2026-10-04", vencimiento: "", estado: "pendiente",
+  id: "f100", numero: "02", fecha: "2026-10-04", vencimiento: "", estado: "pendiente",
   cliente: { nombre: "Nombre del cliente", nif: "", direccion: "", email: "", logo: "" },
   periodo: { desde: "", hasta: "" }, resumen: "Proyecto + 2 meses de mantenimiento",
   lineas: [
@@ -207,9 +207,9 @@ const totales = f => {
   return { base, iva, total: r2(base + iva) };
 };
 const siguienteNumero = () => {
-  const y = new Date().getFullYear();
-  const n = store.filter(f => f.numero.startsWith(y + "-")).map(f => +f.numero.split("-")[1] || 0);
-  return `${y}-${String((n.length ? Math.max(...n) : 0) + 1).padStart(3, "0")}`;
+  // Numeración correlativa: 01, 02, 03…
+  const n = store.map(f => parseInt(String(f.numero).replace(/\D/g, ""), 10)).filter(Number.isFinite);
+  return String((n.length ? Math.max(...n) : 0) + 1).padStart(2, "0");
 };
 
 /* ===== Panel ===== */
