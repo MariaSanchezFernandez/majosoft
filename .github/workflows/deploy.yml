@@ -1,13 +1,18 @@
 name: Publicar en majosoft.es
 
+# Se publica al subir a la rama produccion (servidor de apartamentos, 31.70.154.16).
+# main es la rama de trabajo: no publica.
 on:
   push:
-    branches: [main]
+    branches: [produccion]
   workflow_dispatch:
 
 concurrency:
   group: deploy-produccion
   cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
