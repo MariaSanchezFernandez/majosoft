@@ -133,7 +133,7 @@
     .ed:empty::before { content: attr(data-ph); color: #b9b8ad; }
     .s-top .ed:hover { outline-color: #55564f; }
     @media print { .ed, .ed:hover, .ed:focus { outline: none !important; background: none !important; } .ed:empty::before { content: ""; } }
-    .pay .legal { grid-column: 1 / -1; margin: 0; padding-top: 3mm; border-top: 1px solid var(--line); color: var(--ink2); font-size: 8pt; line-height: 1.5; font-style: italic; }
+    .pay .legal { grid-column: 1 / -1; margin: 0; padding-bottom: 3mm; border-bottom: 1px solid var(--line); color: var(--ink2); font-size: 8pt; line-height: 1.5; font-style: italic; }
     .s-bottom { margin-top: auto; padding-top: 5mm; }
     .pay { display: grid; grid-template-columns: 1.2fr 1fr; gap: 8mm; background: var(--cream); border-radius: 3mm; padding: 4.5mm 6mm; }
     .pay p { margin: 0; color: var(--ink2); }
@@ -389,11 +389,11 @@ function sheet() {
     </div>
     <div class="s-bottom">
       <div class="pay">
+        ${(f.irpf ?? IRPF_DEFECTO) == 7 ? `<p class="legal">${NOTA_IRPF}</p>` : ""}
         <div><span class="lbl">Forma de pago</span><p>Transferencia bancaria${f.vencimiento ? ` antes del ${fecha(f.vencimiento)}` : ""}</p>
           ${e.iban ? `<p class="iban" style="margin-top:2mm">${esc(e.iban)}</p>` : `<p style="margin-top:2mm;color:var(--muted)">IBAN pendiente de indicar</p>`}
           <p style="margin-top:2mm">Concepto: <b>Factura ${esc(f.numero)}</b></p></div>
         ${f.notas ? `<div><span class="lbl">Condiciones</span><p>${esc(f.notas)}</p></div>` : ""}
-        ${(f.irpf ?? IRPF_DEFECTO) == 7 ? `<p class="legal">${NOTA_IRPF}</p>` : ""}
       </div>
       <div class="thanks"><b>Gracias por confiar en Majosoft<i>.</i></b></div>
       <div class="s-foot"><span>Majosoft · Estudio de desarrollo de software · majosoft.es</span><span>Factura ${esc(f.numero)} · Página 1 de 1</span></div>
