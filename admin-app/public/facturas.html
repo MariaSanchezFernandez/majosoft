@@ -93,6 +93,7 @@
     /* ===== Factura A4 ===== */
     .sheet { width: 210mm; height: 297mm; margin: 0 auto; background: #fff; box-shadow: 0 20px 60px rgba(21,22,26,.18); display: flex; flex-direction: column; font-size: 9.5pt; line-height: 1.5; padding: 16mm 18mm 0; position: relative; overflow: hidden; }
     .sheet * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sheet > * { flex-shrink: 0; } /* ninguna parte se encoge (antes se cortaba la cabecera) */
     .s-top { background: var(--ink); color: var(--cream); margin: -16mm -18mm 0; padding: 12mm 18mm 10mm; display: flex; justify-content: space-between; align-items: flex-start; position: relative; overflow: hidden; }
     .s-top::before { content: ""; position: absolute; width: 70mm; height: 70mm; border-radius: 50%; background: var(--lime); opacity: .14; filter: blur(30px); top: -35mm; right: -25mm; }
     .s-top > * { position: relative; }
@@ -103,23 +104,23 @@
     .s-top .me h1 { margin: 5mm 0 0; font-size: 20pt; font-weight: 900; letter-spacing: -.03em; line-height: 1; }
     .s-top .meta { text-align: right; font-size: 9pt; color: #a9a99c; line-height: 1.6; }
     .s-top .meta b { color: var(--lime); font-size: 16pt; display: block; margin-bottom: 2mm; }
-    .strip { display: grid; grid-template-columns: 1fr 1fr 2fr; margin-top: 8mm; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); }
+    .strip { display: grid; grid-template-columns: 1fr 1fr 2fr; margin-top: 6mm; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); }
     .strip--2 { grid-template-columns: 1fr 3fr; }
     .strip div { padding: 3.5mm 0 3.5mm 4mm; border-left: 1px solid var(--line); }
     .strip div:first-child { border-left: none; padding-left: 0; }
     .strip small, .lbl { display: block; font-size: 7pt; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 1mm; }
     .strip b { font-size: 10.5pt; }
-    .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 10mm; margin-top: 9mm; color: var(--ink2); line-height: 1.6; }
+    .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 10mm; margin-top: 7mm; color: var(--ink2); line-height: 1.6; }
     .parties b { display: block; font-size: 11.5pt; color: var(--ink); margin-bottom: .5mm; }
     .parties .to { text-align: right; position: relative; }
     .parties .to img { height: 11mm; width: auto; max-width: 40mm; object-fit: contain; display: block; margin: -2mm 0 2mm auto; }
-    table.items { width: 100%; border-collapse: collapse; margin-top: 10mm; }
+    table.items { width: 100%; border-collapse: collapse; margin-top: 7mm; }
     table.items th { text-align: left; font-size: 7pt; letter-spacing: .14em; text-transform: uppercase; color: var(--cream); background: var(--ink); padding: 2.6mm 3mm; font-weight: 700; }
     table.items th:first-child { border-radius: 2mm 0 0 2mm; } table.items th:last-child { border-radius: 0 2mm 2mm 0; }
-    table.items td { padding: 4.5mm 3mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+    table.items td { padding: 3.2mm 3mm; border-bottom: 1px solid var(--line); vertical-align: top; }
     table.items td.n { color: var(--muted); font-weight: 700; width: 9mm; }
     table.items td small { color: var(--muted); display: block; margin-top: .5mm; }
-    .sum { display: grid; grid-template-columns: 1fr 78mm; gap: 10mm; margin-top: 7mm; }
+    .sum { display: grid; grid-template-columns: 1fr 78mm; gap: 10mm; margin-top: 5mm; }
     .sum .words { color: var(--muted); font-size: 8.5pt; align-self: end; }
     .totals div { display: flex; justify-content: space-between; padding: 1.8mm 0; border-bottom: 1px solid var(--line); }
     .totals .t { border: none; border-top: 1.5px solid var(--ink); margin-top: 1mm; padding: 3mm 0 0; align-items: baseline; font-weight: 800; }
@@ -132,12 +133,12 @@
     .ed:empty::before { content: attr(data-ph); color: #b9b8ad; }
     .s-top .ed:hover { outline-color: #55564f; }
     @media print { .ed, .ed:hover, .ed:focus { outline: none !important; background: none !important; } .ed:empty::before { content: ""; } }
-    .legal { margin: 6mm 0 0; padding: 3mm 4mm; border-left: 3px solid var(--line); color: var(--ink2); font-size: 8.5pt; line-height: 1.5; font-style: italic; }
-    .s-bottom { margin-top: auto; padding-top: 7mm; }
-    .pay { display: grid; grid-template-columns: 1.2fr 1fr; gap: 8mm; background: var(--cream); border-radius: 3mm; padding: 6mm; }
+    .legal { margin: 4mm 0 0; padding: 3mm 4mm; border-left: 3px solid var(--line); color: var(--ink2); font-size: 8.5pt; line-height: 1.5; font-style: italic; }
+    .s-bottom { margin-top: auto; padding-top: 5mm; }
+    .pay { display: grid; grid-template-columns: 1.2fr 1fr; gap: 8mm; background: var(--cream); border-radius: 3mm; padding: 4.5mm 6mm; }
     .pay p { margin: 0; color: var(--ink2); }
     .pay .iban { font-family: ui-monospace, Menlo, monospace; font-size: 10.5pt; font-weight: 700; color: var(--ink); letter-spacing: .02em; }
-    .thanks { display: flex; justify-content: space-between; align-items: end; margin: 8mm 0 6mm; }
+    .thanks { display: flex; justify-content: space-between; align-items: end; margin: 5mm 0 4mm; }
     .thanks b { font-size: 15pt; letter-spacing: -.02em; }
     .thanks b i { font-style: normal; color: var(--lime2); }
     .thanks span { font-size: 7.5pt; color: var(--muted); max-width: 85mm; text-align: right; }
