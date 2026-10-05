@@ -42,7 +42,11 @@ export function autosaver(fn, delay = 700) {
 }
 
 export async function mountShell(active) {
-  const me = await api("me");
+  // El menú se pinta al instante con el último usuario conocido; luego se confirma con el servidor
+  let me;
+  try { me = JSON.parse(sessionStorage.getItem("mj-me")); } catch {}
+  const fresh = api("me").then(m => { try { sessionStorage.setItem("mj-me", JSON.stringify(m)); } catch {} return m; });
+  if (!me) me = await fresh;
   const ini = (me.name || me.email).split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join("");
   const link = (href, key, label, ic) => `<a href="${href}" class="${active === key ? "on" : ""}">${icon(ic)}${label}</a>`;
   const side = document.createElement("aside");
@@ -68,6 +72,6 @@ export async function mountShell(active) {
   document.body.prepend(side);
   document.body.classList.add("has-side");
   side.querySelector(".side-toggle").onclick = () => side.classList.toggle("open");
-  side.querySelector("#logout").onclick = async () => { await api("logout", { method: "POST" }); location.href = "/admin/login"; };
-  return me;
+  side.querySelector("#logout").onclick = async () => { try { sessionStorage.removeItem("mj-me"); } catch {} await api("logout", { method: "POST" }); location.href = "/admin/login"; };
+  return fresh;
 }

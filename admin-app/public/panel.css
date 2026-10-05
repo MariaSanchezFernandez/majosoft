@@ -59,3 +59,36 @@ body.has-side { padding-left: var(--side); }
   body.has-side { padding: 0 !important; }
   .side, .toast { display: none !important; }
 }
+
+/* ===== Transiciones entre páginas (View Transitions entre documentos) ===== */
+@view-transition { navigation: auto; }
+.side { view-transition-name: side; }
+::view-transition-old(root) { animation: mj-out .16s cubic-bezier(.4, 0, 1, 1) both; }
+::view-transition-new(root) { animation: mj-in .32s cubic-bezier(.16, 1, .3, 1) both; }
+::view-transition-group(side), ::view-transition-old(side), ::view-transition-new(side) { animation: none; }
+@keyframes mj-out { to { opacity: 0; transform: translateY(-4px); } }
+@keyframes mj-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* Sin saltos: el hueco del menú existe desde el primer instante */
+body:not(.no-side) { padding-left: var(--side); }
+@media (max-width: 900px) { body:not(.no-side) { padding-left: 0; padding-top: 56px; } }
+
+/* Entrada escalonada del contenido */
+@keyframes mj-rise { from { opacity: 0; transform: translateY(10px); } }
+.page-head, .kpis > *, .grid > .card, .card, .sec, .plist table, .connect .card { animation: mj-rise .5s cubic-bezier(.16, 1, .3, 1) both; }
+.kpis > :nth-child(2) { animation-delay: .04s; } .kpis > :nth-child(3) { animation-delay: .08s; } .kpis > :nth-child(4) { animation-delay: .12s; }
+.grid > .card:nth-child(2) { animation-delay: .06s; } .grid > .card:nth-child(3) { animation-delay: .1s; } .grid > .card:nth-child(4) { animation-delay: .14s; }
+tbody tr { animation: mj-rise .4s cubic-bezier(.16, 1, .3, 1) both; }
+tbody tr:nth-child(2) { animation-delay: .02s; } tbody tr:nth-child(3) { animation-delay: .04s; } tbody tr:nth-child(4) { animation-delay: .06s; }
+tbody tr:nth-child(5) { animation-delay: .08s; } tbody tr:nth-child(n+6) { animation-delay: .1s; }
+.msg { animation: mj-rise .35s cubic-bezier(.16, 1, .3, 1) both; }
+
+/* Interacciones más finas */
+.side nav a, .btn, .kpi, .card, .tool { transition: background .2s ease, color .2s ease, border-color .2s ease, box-shadow .25s ease, transform .25s cubic-bezier(.16, 1, .3, 1); }
+.btn:active { transform: scale(.98); }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
+}
+@media print { * { animation: none !important; } }
