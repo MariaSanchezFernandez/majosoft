@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Maquetador de presupuestos · Majosoft</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
-  <link rel="icon" type="image/png" href="../assets/favicon.png" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <link rel="icon" type="image/png" href="/assets/favicon.png" />
+  <link rel="stylesheet" href="/admin/panel.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -21,12 +22,27 @@
 
     /* ===== Layout de la app ===== */
     .app { display: grid; grid-template-columns: 440px 1fr; height: 100vh; }
-    .topbar { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: var(--ink); color: var(--cream); flex-wrap: wrap; }
+    .topbar { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: #fff; color: var(--ink); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+    .topbar .doc-title { font-weight: 800; letter-spacing: -.01em; margin-right: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40vw; }
+    [hidden] { display: none !important; }
+    /* Listado */
+    .plist { max-width: 1100px; padding: 34px 32px 60px; }
+    .plist table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+    .plist th { text-align: left; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--line); }
+    .plist td { padding: 13px 14px; border-bottom: 1px solid #eeede5; }
+    .plist tbody tr { cursor: pointer; } .plist tbody tr:hover { background: #fafaf5; }
+    .plist .r { text-align: right; white-space: nowrap; }
+    .plist .del { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 4px 9px; cursor: pointer; color: var(--muted); }
+    .plist .del:hover { color: #b42318; border-color: #b42318; }
+    .pbtns { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pbtns .btn { border-color: var(--line); color: var(--ink); background: #fff; padding: 10px 16px; border-radius: 10px; }
+    .pbtns .btn--ink { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+    .empty { text-align: center; padding: 40px; color: var(--muted); }
     .app { grid-template-rows: auto 1fr; }
     .topbar .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -.02em; margin-right: auto; }
     .topbar .brand img { height: 22px; filter: invert(1); }
     .topbar .brand span { font-weight: 500; color: #a9a99c; }
-    .btn { border: 1px solid #3a3a33; background: transparent; color: inherit; padding: 8px 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn { border: 1px solid var(--line); text-decoration: none; background: transparent; color: inherit; padding: 8px 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
     .btn:hover { border-color: var(--lime); }
     .btn--lime { background: var(--lime); color: var(--ink); border-color: var(--lime); }
     .btn--lime:hover { background: #e3ec4a; }
@@ -154,13 +170,19 @@
   </style>
 </head>
 <body>
-  <div class="app">
+  <section class="plist" id="plist" hidden>
+    <div class="page-head">
+      <div><div class="crumbs">Comercial</div><h1>Presupuestos</h1><p>Propuestas corporativas con cálculo automático y exportación a PDF.</p></div>
+      <div class="pbtns"><button class="btn" id="bImport">Importar JSON</button><button class="btn" id="bExample">Desde ejemplo</button><button class="btn btn--ink" id="bBlank">+ Nuevo presupuesto</button></div>
+    </div>
+    <table><thead><tr><th>Proyecto</th><th>Cliente</th><th>Fecha</th><th class="r">Total</th><th></th></tr></thead><tbody id="prows"></tbody></table>
+  </section>
+  <div class="app" id="app" hidden>
     <header class="topbar">
-      <a class="brand" href="./" style="color:inherit;text-decoration:none"><img src="../assets/logo.svg" alt="Majosoft" /> Majosoft <span>· Presupuestos</span></a>
-      <a class="btn" href="facturas" style="text-decoration:none">Facturas</a>
-      <button class="btn" id="bNew">Nuevo</button>
-      <button class="btn" id="bLoad">Abrir JSON</button>
-      <button class="btn" id="bSave">Guardar JSON</button>
+      <a class="btn" href="/admin/presupuestos">← Presupuestos</a>
+      <span class="doc-title" id="docTitle"></span>
+      <span class="save-state" data-save-state></span>
+      <button class="btn" id="bSave">Exportar JSON</button>
       <button class="btn btn--lime" id="bPrint">Exportar PDF</button>
       <input type="file" id="file" accept="application/json" hidden />
     </header>
@@ -168,7 +190,10 @@
     <main class="preview-wrap"><article class="doc" id="doc"></article></main>
   </div>
 
-<script>
+<script type="module">
+import { mountShell, api, autosaver, toast } from "/admin/panel.js";
+await mountShell("presupuestos");
+
 /* ===== Plantilla de ejemplo: presupuesto Academia Online ===== */
 const EJEMPLO = {
   kicker: "Propuesta de proyecto",
@@ -241,14 +266,11 @@ const VACIO = {
   contacto: { ...EJEMPLO.contacto }
 };
 
-const KEY = "majosoft-presupuesto";
-let D;
-try { D = JSON.parse(localStorage.getItem(KEY)) || structuredClone(EJEMPLO); } catch { D = structuredClone(EJEMPLO); }
+let D = null;
 const migrar = d => {
   if (d.totalConIva == null) { d.auto = true; d.totalConIva = Number(d.totalRedondeado) || Math.round(d.modulos.reduce((s, m) => s + Number(m.precio || 0), 0) * (1 + d.iva / 100)); }
   delete d.totalRedondeado; return d;
 };
-D = migrar(D);
 
 /* ===== Utilidades ===== */
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -289,7 +311,7 @@ function render() {
 
   document.getElementById("doc").innerHTML = `
   <section class="cover">
-    <div class="cover-top"><img src="../assets/logo.svg" alt="Majosoft" /><span>${esc(D.referencia)}${D.referencia && D.fecha ? " · " : ""}${fecha(D.fecha)}</span></div>
+    <div class="cover-top"><img src="/assets/logo.svg" alt="Majosoft" /><span>${esc(D.referencia)}${D.referencia && D.fecha ? " · " : ""}${fecha(D.fecha)}</span></div>
     <span class="kicker">${esc(D.kicker)}</span>
     <h1>${esc(D.titulo)}</h1>
     ${D.subtitulo ? `<p class="sub">${esc(D.subtitulo)}</p>` : ""}
@@ -351,7 +373,7 @@ function render() {
 
     <div class="contact">
       <div><b>${esc(D.contacto.nombre)}</b><span>${[D.contacto.telefono, D.contacto.email, D.contacto.web].filter(Boolean).map(esc).join("  ·  ")}</span></div>
-      <img src="../assets/logo.svg" alt="Majosoft" />
+      <img src="/assets/logo.svg" alt="Majosoft" />
     </div>
   </div>
 `;
@@ -490,8 +512,8 @@ const NUEVOS = {
   "requisitos": () => ({ titulo: "Nuevo grupo", items: [] })
 };
 
-function save() { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch {} }
-function refresh(rebuild) { if (rebuild) buildEditor(); render(); syncEditor(); save(); }
+const save = autosaver(() => api(`docs/presupuestos/${D.id}`, { method: "PUT", body: D }));
+function refresh(rebuild) { if (rebuild) buildEditor(); render(); syncEditor(); save(); document.getElementById("docTitle").textContent = D.titulo; }
 
 /* Refleja en el editor los precios calculados sin reconstruirlo (no se pierde el foco) */
 function syncEditor() {
@@ -528,26 +550,60 @@ ed.addEventListener("click", e => {
 /* ===== Acciones ===== */
 const slug = s => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^\w]+/g, "-").replace(/^-|-$/g, "").toLowerCase();
 document.getElementById("bPrint").onclick = () => window.print();
-document.getElementById("bNew").onclick = () => {
-  const ej = confirm("¿Empezar desde el ejemplo de Academia Online?\n\nAceptar = ejemplo · Cancelar = en blanco");
-  if (!confirm("Se perderán los cambios no guardados en JSON. ¿Continuar?")) return;
-  D = structuredClone(ej ? EJEMPLO : VACIO); refresh(true);
-};
 document.getElementById("bSave").onclick = () => {
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([JSON.stringify(D, null, 2)], { type: "application/json" }));
   a.download = `presupuesto-${slug(D.titulo || "majosoft")}.json`; a.click(); URL.revokeObjectURL(a.href);
 };
+/* ===== Listado y apertura ===== */
 const file = document.getElementById("file");
-document.getElementById("bLoad").onclick = () => file.click();
+const nuevoId = () => "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+async function crear(base) {
+  const d = migrar({ ...structuredClone(VACIO), ...structuredClone(base), id: nuevoId(), fecha: new Date().toISOString().slice(0, 10) });
+  await api(`docs/presupuestos/${d.id}`, { method: "PUT", body: d });
+  location.href = "/admin/presupuestos?id=" + d.id;
+}
+document.getElementById("bBlank").onclick = () => crear(VACIO);
+document.getElementById("bExample").onclick = () => crear(EJEMPLO);
+document.getElementById("bImport").onclick = () => file.click();
 file.onchange = async () => {
-  try { D = migrar({ ...structuredClone(VACIO), ...JSON.parse(await file.files[0].text()) }); refresh(true); }
-  catch { alert("El archivo no es un presupuesto válido."); }
+  try { await crear(JSON.parse(await file.files[0].text())); }
+  catch { toast("El archivo no es un presupuesto válido", true); }
   file.value = "";
 };
 
-buildEditor(); render(); syncEditor();
-document.fonts?.ready.then(render); // las medidas cambian al cargar Inter
+const lista = await api("docs/presupuestos");
+const params = new URLSearchParams(location.search);
+if (params.has("nuevo")) await crear(VACIO);
+else if (params.get("id")) {
+  D = lista.find(p => p.id === params.get("id"));
+  if (!D) location.replace("/admin/presupuestos");
+  else D = migrar(D);
+}
+
+if (D) {
+  document.getElementById("app").hidden = false;
+  document.getElementById("docTitle").textContent = D.titulo;
+  buildEditor(); render(); syncEditor();
+  document.fonts?.ready.then(render); // las medidas cambian al cargar Inter
+} else {
+  document.getElementById("plist").hidden = false;
+  const totalP = p => p.auto ? Number(p.totalConIva || 0) : Math.round(p.modulos.reduce((s, m) => s + Number(m.precio || 0), 0) * (1 + p.iva / 100) * 100) / 100;
+  document.getElementById("prows").innerHTML = lista.length ? lista.map(p => `<tr data-id="${esc(p.id)}">
+    <td><b>${esc(p.titulo)}</b></td><td>${esc(p.cliente)}</td><td>${fecha(p.fecha)}</td><td class="r"><b>${eur(totalP(p))}</b></td>
+    <td class="r"><button class="del" data-del="${esc(p.id)}" title="Eliminar">✕</button></td></tr>`).join("")
+    : `<tr><td colspan="5" class="empty">Aún no hay presupuestos. Crea uno nuevo o parte del ejemplo.</td></tr>`;
+  document.getElementById("prows").onclick = async e => {
+    const del = e.target.closest("[data-del]");
+    if (del) {
+      if (!confirm("¿Eliminar este presupuesto?")) return;
+      await api(`docs/presupuestos/${del.dataset.del}`, { method: "DELETE" });
+      return location.reload();
+    }
+    const tr = e.target.closest("tr[data-id]");
+    if (tr) location.href = "/admin/presupuestos?id=" + tr.dataset.id;
+  };
+}
 </script>
 </body>
 </html>

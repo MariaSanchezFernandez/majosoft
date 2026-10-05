@@ -1,0 +1,42 @@
+name: Publicar en majosoft.es
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-produccion
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Comprobar sintaxis del panel
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: |
+          node --check admin-app/server.js
+          node --check admin-app/cli.js
+
+      - name: Publicar en el servidor
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # La clave solo puede ejecutar el script de despliegue del servidor
+          ssh -i ~/.ssh/deploy -o StrictHostKeyChecking=yes "root@$DEPLOY_HOST" deploy
+
+      - name: Comprobar la web
+        run: |
+          curl -fsS -o /dev/null https://majosoft.es/
+          test "$(curl -s -o /dev/null -w '%{http_code}' https://majosoft.es/admin/)" = 302
+          test "$(curl -s -o /dev/null -w '%{http_code}' https://majosoft.es/admin/api/docs/facturas)" = 401

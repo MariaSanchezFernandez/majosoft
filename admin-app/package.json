@@ -1,0 +1,16 @@
+{
+  "name": "majosoft-admin",
+  "version": "1.0.0",
+  "description": "Panel privado de Majosoft: presupuestos y facturas con login y verificación en dos pasos",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "qrcode": "^1.5.4"
+  }
+}

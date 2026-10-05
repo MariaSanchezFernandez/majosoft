@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acceso · Majosoft</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/admin/panel.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; font-family: Inter, system-ui, sans-serif; color: var(--ink); background: var(--cream); }
+    .art { background: var(--ink); color: var(--cream); padding: 48px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+    .art::before { content: ""; position: absolute; width: 520px; height: 520px; border-radius: 50%; background: var(--lime); opacity: .16; filter: blur(90px); top: -180px; right: -160px; }
+    .art::after { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(245,244,236,.07) 1px, transparent 1px); background-size: 24px 24px; }
+    .art > * { position: relative; z-index: 1; }
+    .art img { height: 26px; filter: invert(1); align-self: flex-start; }
+    .art h2 { margin: auto 0 14px; font-size: 44px; line-height: 1.02; letter-spacing: -.04em; font-weight: 900; max-width: 460px; }
+    .art h2 i { font-style: normal; color: var(--lime); }
+    .art p { color: #a9a99c; max-width: 400px; line-height: 1.6; margin: 0 0 40px; }
+    .art .badges { display: flex; gap: 10px; flex-wrap: wrap; }
+    .art .badges span { border: 1px solid #3a3a33; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 600; color: #c9c9bd; }
+    .form-wrap { display: grid; place-items: center; padding: 32px 16px; }
+    .card { width: 100%; max-width: 380px; }
+    .card h1 { font-size: 28px; letter-spacing: -.03em; margin: 0 0 6px; }
+    .card .lead { color: var(--muted); margin: 0 0 26px; line-height: 1.5; font-size: 14px; }
+    label { display: block; font-size: 12.5px; font-weight: 700; margin: 14px 0 6px; }
+    input { width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; font: inherit; font-size: 15px; background: #fff; color: var(--ink); }
+    input:focus { outline: 3px solid rgba(214,224,34,.5); border-color: var(--ink); }
+    input.code { text-align: center; font-size: 26px; letter-spacing: .4em; font-weight: 800; padding: 14px; }
+    button.go { margin-top: 22px; width: 100%; padding: 13px; border: none; border-radius: 10px; background: var(--ink); color: var(--cream); font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; }
+    button.go:hover { background: #2a2b26; }
+    button.go:disabled { opacity: .6; cursor: wait; }
+    .err { margin-top: 14px; padding: 10px 12px; border-radius: 10px; background: #fdecea; color: var(--bad); font-size: 13px; font-weight: 600; }
+    .qr { display: flex; gap: 16px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+    .qr img { width: 132px; height: 132px; image-rendering: pixelated; }
+    .qr small { color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .qr code { display: block; margin-top: 6px; font-size: 11.5px; font-weight: 700; color: var(--ink); word-break: break-all; }
+    .steps { margin: 0 0 16px; padding-left: 18px; color: var(--ink2); font-size: 13.5px; line-height: 1.6; }
+    .back { margin-top: 14px; background: none; border: none; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; }
+    .secure { margin-top: 26px; display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+    .secure svg { width: 14px; height: 14px; }
+    [hidden] { display: none !important; }
+    @media (max-width: 860px) { body { grid-template-columns: 1fr; } .art { padding: 28px 20px; } .art h2 { font-size: 30px; margin-top: 40px; } .art p { margin-bottom: 18px; } }
+  </style>
+</head>
+<body>
+  <section class="art">
+    <img src="/assets/logo.svg" alt="Majosoft" />
+    <h2>Panel de gestión <i>Majosoft</i>.</h2>
+    <p>Presupuestos, facturación y control de la actividad del estudio en un único espacio privado.</p>
+    <div class="badges"><span>Cifrado HTTPS</span><span>Verificación en dos pasos</span><span>Registro de accesos</span></div>
+  </section>
+
+  <section class="form-wrap">
+    <div class="card">
+      <!-- Paso 1 -->
+      <form id="f1">
+        <h1>Iniciar sesión</h1>
+        <p class="lead">Accede con tu cuenta de administrador.</p>
+        <label for="email">Correo electrónico</label>
+        <input id="email" type="email" autocomplete="username" required autofocus />
+        <label for="pw">Contraseña</label>
+        <input id="pw" type="password" autocomplete="current-password" required />
+        <button class="go" type="submit">Continuar</button>
+      </form>
+
+      <!-- Paso 2: código -->
+      <form id="f2" hidden>
+        <h1>Verificación</h1>
+        <p class="lead">Introduce el código de 6 dígitos de tu app de autenticación.</p>
+        <input id="code" class="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="\d{6}" required />
+        <button class="go" type="submit">Verificar y entrar</button>
+        <button class="back" type="button" data-back>Volver</button>
+      </form>
+
+      <!-- Paso 2 (primer acceso): configurar la app -->
+      <form id="f3" hidden>
+        <h1>Activa la verificación</h1>
+        <p class="lead">Primer acceso: protege tu cuenta con un segundo paso.</p>
+        <ol class="steps">
+          <li>Abre Google Authenticator, Microsoft Authenticator o 1Password.</li>
+          <li>Escanea este código QR (o escribe la clave).</li>
+          <li>Introduce el código de 6 dígitos que aparece.</li>
+        </ol>
+        <div class="qr"><img id="qr" alt="Código QR" /><small>Clave manual<code id="secret"></code></small></div>
+        <label for="code2">Código de la app</label>
+        <input id="code2" class="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="\d{6}" required />
+        <button class="go" type="submit">Activar y entrar</button>
+        <button class="back" type="button" data-back>Volver</button>
+      </form>
+
+      <div class="err" id="err" hidden></div>
+      <div class="secure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Conexión segura · Acceso restringido y registrado</div>
+    </div>
+  </section>
+
+<script type="module">
+const $ = id => document.getElementById(id);
+const show = id => ["f1", "f2", "f3"].forEach(f => $(f).hidden = f !== id);
+const err = m => { $("err").hidden = !m; $("err").textContent = m || ""; };
+
+async function post(path, body) {
+  const r = await fetch("/admin/api/" + path, { method: "POST", credentials: "same-origin",
+    headers: { "Content-Type": "application/json", "X-Requested-With": "majosoft" }, body: JSON.stringify(body) });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || "No se pudo completar");
+  return d;
+}
+async function busy(form, fn) {
+  const b = form.querySelector("button.go"); b.disabled = true; err("");
+  try { await fn(); } catch (e) { err(e.message); } finally { b.disabled = false; }
+}
+
+$("f1").onsubmit = e => { e.preventDefault(); busy($("f1"), async () => {
+  const { step } = await post("login", { email: $("email").value, password: $("pw").value });
+  $("pw").value = "";
+  if (step === "totp") { show("f2"); $("code").focus(); return; }
+  const r = await fetch("/admin/api/login/setup", { credentials: "same-origin" });
+  const d = await r.json(); if (!r.ok) throw new Error(d.error);
+  $("qr").src = d.qr; $("secret").textContent = d.secret;
+  show("f3"); $("code2").focus();
+}); };
+
+const verify = (form, input) => e => { e.preventDefault(); busy(form, async () => {
+  await post("login/verify", { code: input.value });
+  location.href = "/admin/";
+}).finally(() => input.value = ""); };
+$("f2").onsubmit = verify($("f2"), $("code"));
+$("f3").onsubmit = verify($("f3"), $("code2"));
+document.querySelectorAll("[data-back]").forEach(b => b.onclick = () => { err(""); show("f1"); $("pw").focus(); });
+</script>
+</body>
+</html>

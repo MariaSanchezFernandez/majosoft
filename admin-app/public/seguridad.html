@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seguridad · Panel Majosoft</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/admin/panel.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: var(--cream); color: var(--ink); font-size: 14px; }
+    main { max-width: 1100px; padding: 34px 32px 60px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 20px; min-width: 0; }
+    .card.wide { grid-column: 1 / -1; }
+    .card h2 { font-size: 15px; margin: 0 0 4px; }
+    .card .sub { color: var(--muted); font-size: 12.5px; margin: 0 0 14px; line-height: 1.5; }
+    .status { display: flex; flex-direction: column; gap: 10px; }
+    .status div { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--cream); font-weight: 600; font-size: 13px; }
+    .ok { color: var(--ok); } .ok::before { content: "● "; }
+    label { display: block; font-size: 12px; font-weight: 700; margin: 10px 0 5px; color: var(--muted); }
+    input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font: inherit; }
+    input:focus { outline: 3px solid rgba(214,224,34,.5); border-color: var(--ink); }
+    .btn { margin-top: 14px; padding: 10px 16px; border-radius: 10px; border: none; background: var(--ink); color: var(--cream); font: inherit; font-weight: 700; cursor: pointer; }
+    .btn.sm { margin: 0; padding: 6px 10px; font-size: 12px; background: #fff; color: var(--bad); border: 1px solid var(--line); }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); }
+    td { padding: 10px; border-bottom: 1px solid #eeede5; font-size: 13px; vertical-align: top; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; background: var(--lime); }
+    .bad { color: var(--bad); font-weight: 700; }
+    .scroll { overflow-x: auto; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } main { padding: 24px 16px 40px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="page-head"><div><div class="crumbs">Cuenta</div><h1>Seguridad</h1><p>Protección de la cuenta, sesiones abiertas y registro de accesos.</p></div></div>
+    <div class="grid">
+      <div class="card">
+        <h2>Estado de la protección</h2><p class="sub">Medidas activas en el panel.</p>
+        <div class="status">
+          <div>Verificación en dos pasos <span class="ok">Activa</span></div>
+          <div>Contraseña cifrada (scrypt) <span class="ok">Activa</span></div>
+          <div>Bloqueo tras 5 intentos fallidos <span class="ok">15 min</span></div>
+          <div>Cierre por inactividad <span class="ok">60 min</span></div>
+          <div>Conexión cifrada HTTPS <span class="ok">Activa</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Cambiar contraseña</h2><p class="sub">Mínimo 12 caracteres, con mayúsculas, minúsculas y números. Se cerrarán las demás sesiones.</p>
+        <form id="pw">
+          <label>Contraseña actual</label><input type="password" id="cur" autocomplete="current-password" required />
+          <label>Nueva contraseña</label><input type="password" id="new1" autocomplete="new-password" minlength="12" required />
+          <label>Repite la nueva contraseña</label><input type="password" id="new2" autocomplete="new-password" minlength="12" required />
+          <button class="btn">Actualizar contraseña</button>
+        </form>
+      </div>
+      <div class="card wide">
+        <h2>Sesiones abiertas</h2><p class="sub">Dispositivos con acceso ahora mismo. Cierra cualquiera que no reconozcas.</p>
+        <div class="scroll"><table><thead><tr><th>Dispositivo</th><th>IP</th><th>Inicio</th><th>Última actividad</th><th></th></tr></thead><tbody id="sessions"></tbody></table></div>
+      </div>
+      <div class="card wide">
+        <h2>Registro de accesos</h2><p class="sub">Últimos 40 eventos.</p>
+        <div class="scroll"><table><thead><tr><th>Fecha</th><th>Evento</th><th>Cuenta</th><th>IP</th></tr></thead><tbody id="audit"></tbody></table></div>
+      </div>
+    </div>
+  </main>
+<script type="module">
+import { mountShell, api, toast } from "/admin/panel.js";
+await mountShell("seguridad");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const when = t => new Date(t).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+const device = ua => /iPhone|iPad/.test(ua) ? "iPhone / iPad" : /Android/.test(ua) ? "Android" : /Mac OS/.test(ua) ? "Mac" : /Windows/.test(ua) ? "Windows" : "Otro";
+const browser = ua => /Edg\//.test(ua) ? "Edge" : /Chrome\//.test(ua) ? "Chrome" : /Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : "";
+const EV = { login_ok: "Inicio de sesión", login_fail: "Intento fallido", account_locked: "Cuenta bloqueada", logout: "Cierre de sesión", "2fa_enabled": "2FA activada", password_changed: "Contraseña cambiada", doc_created: "Documento creado", doc_deleted: "Documento eliminado", session_revoked: "Sesión revocada", user_created: "Usuario creado", "2fa_reset": "2FA reiniciada" };
+
+async function load() {
+  const d = await api("security");
+  document.getElementById("sessions").innerHTML = d.sessions.map(s => `<tr>
+    <td>${device(s.user_agent)} ${browser(s.user_agent)} ${s.current ? '<span class="tag">Esta sesión</span>' : ""}</td>
+    <td>${esc(s.ip)}</td><td>${when(s.created_at)}</td><td>${when(s.last_seen)}</td>
+    <td>${s.current ? "" : `<button class="btn sm" data-kill="${s.id}">Cerrar</button>`}</td></tr>`).join("");
+  document.getElementById("audit").innerHTML = d.audit.map(a => `<tr>
+    <td>${when(a.at)}</td><td class="${/fail|locked|reset/.test(a.event) ? "bad" : ""}">${EV[a.event] || esc(a.event)}${a.detail ? ` <span style="color:var(--muted)">· ${esc(a.detail)}</span>` : ""}</td>
+    <td>${esc(a.email || "")}</td><td>${esc(a.ip || "")}</td></tr>`).join("");
+  document.querySelectorAll("[data-kill]").forEach(b => b.onclick = async () => { await api("sessions/" + b.dataset.kill, { method: "DELETE" }); toast("Sesión cerrada"); load(); });
+}
+load();
+
+document.getElementById("pw").onsubmit = async e => {
+  e.preventDefault();
+  const [cur, n1, n2] = ["cur", "new1", "new2"].map(id => document.getElementById(id).value);
+  if (n1 !== n2) return toast("Las contraseñas nuevas no coinciden", true);
+  try { await api("password", { method: "POST", body: { current: cur, next: n1 } }); e.target.reset(); toast("Contraseña actualizada"); load(); }
+  catch (err) { toast(err.message, true); }
+};
+</script>
+</body>
+</html>

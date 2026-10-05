@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Facturas · Majosoft</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <link rel="stylesheet" href="/admin/panel.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -14,20 +15,22 @@
     * { box-sizing: border-box; }
     html, body { margin: 0; }
     body { font-family: Inter, system-ui, sans-serif; background: var(--cream); color: var(--ink); font-size: 14px; }
-    .topbar { display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: var(--ink); color: var(--cream); flex-wrap: wrap; }
+    .topbar { display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: #fff; color: var(--ink); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+    .topbar .doc-title { font-weight: 800; margin-right: auto; }
     .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; margin-right: auto; }
     .brand img { height: 22px; filter: invert(1); }
     .brand span { font-weight: 500; color: #a9a99c; }
     .topbar a { color: #a9a99c; text-decoration: none; font-size: 13px; font-weight: 600; margin-right: 6px; }
     .topbar a:hover, .topbar a.on { color: var(--lime); }
-    .btn { border: 1px solid #3a3a33; background: transparent; color: inherit; padding: 8px 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn { border: 1px solid var(--line); text-decoration: none; background: transparent; color: inherit; padding: 8px 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
     .btn:hover { border-color: var(--lime); }
     .btn--lime { background: var(--lime); color: var(--ink); border-color: var(--lime); }
     .btn--dark { border-color: var(--line); color: var(--ink); background: #fff; }
     .btn--dark:hover { border-color: var(--ink); }
 
     /* ===== Panel ===== */
-    .panel { max-width: 1000px; margin: 0 auto; padding: 28px 16px 60px; }
+    .panel { max-width: 1100px; padding: 34px 32px 60px; }
+    .panel h1 { margin: 0 !important; }
     .panel h1 { font-size: 28px; letter-spacing: -.03em; margin: 0 0 18px; }
     .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
     .kpi { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
@@ -128,10 +131,10 @@
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="./" style="color:inherit;text-decoration:none"><img src="../assets/logo.svg" alt="Majosoft" /> Majosoft <span>· Facturas</span></a>
-    <a href="presupuestos">Presupuestos</a>
-    <a href="#" class="on" id="toPanel">Panel de facturas</a>
+  <header class="topbar" id="topbar" hidden>
+    <button class="btn" id="toPanel">← Facturas</button>
+    <span class="doc-title" id="docTitle"></span>
+    <span class="save-state" data-save-state></span>
     <span id="editBtns" hidden>
       <button class="btn" id="bDup">Duplicar</button>
       <button class="btn" id="bDel">Eliminar</button>
@@ -140,12 +143,12 @@
   </header>
 
   <section class="panel" id="panel">
-    <h1>Facturas</h1>
+    <div class="page-head"><div><div class="crumbs">Comercial</div><h1>Facturas</h1><p>Emisión, numeración y seguimiento de cobros.</p></div></div>
     <div class="kpis" id="kpis"></div>
     <div class="tools">
       <input id="q" placeholder="Buscar por cliente, número o concepto…" />
-      <button class="btn btn--dark" id="bExport">Copia de seguridad</button>
-      <button class="btn btn--dark" id="bImport">Restaurar</button>
+      <button class="btn btn--dark" id="bExport">Exportar copia</button>
+      <button class="btn btn--dark" id="bImport">Importar</button>
       <button class="btn btn--lime" id="bNew">+ Nueva factura</button>
       <input type="file" id="file" accept="application/json" hidden />
     </div>
@@ -160,14 +163,16 @@
     <main class="prev"><article class="sheet" id="sheet"></article></main>
   </section>
 
-<script>
-/* ===== Datos (se guardan en este navegador; usa «Copia de seguridad» para conservarlos) ===== */
-const KEY = "majosoft-facturas";
+<script type="module">
+import { mountShell, api, autosaver, toast } from "/admin/panel.js";
+await mountShell("facturas");
+
+/* ===== Datos (guardados en el servidor del panel) ===== */
 const EMISOR = { nombre: "Majosoft", titular: "José Manuel Borrás Rodríguez", nif: "", direccion: "Jaén, España", email: "dev@majosoft.es", telefono: "648 867 950", iban: "" };
 
 const SEMILLA = [{
   id: "f1", numero: "2026-001", fecha: "2026-10-01", vencimiento: "2026-10-31", estado: "pendiente",
-  cliente: { nombre: "Fisioma Úbeda", nif: "", direccion: "Úbeda, Jaén", email: "", logo: "../assets/clientes/fisioma.svg" },
+  cliente: { nombre: "Fisioma Úbeda", nif: "", direccion: "Úbeda, Jaén", email: "", logo: "/assets/clientes/fisioma.svg" },
   periodo: { desde: "2026-10-01", hasta: "2027-09-30" },
   lineas: [{ concepto: "Licencia anual App de Fichaje", detalle: "fichaje.majosoft.es · Registro de jornada · Por empleado y año", cantidad: 1, precio: 30 }],
   iva: 21, notas: "Servicio de suscripción anual. Renovación automática salvo aviso previo de 30 días.",
@@ -184,16 +189,12 @@ const SEMILLA = [{
   emisor: { ...EMISOR }
 }];
 
-let store;
-try { store = JSON.parse(localStorage.getItem(KEY)) || structuredClone(SEMILLA); } catch { store = structuredClone(SEMILLA); }
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch {} };
-try {
-  const vistas = JSON.parse(localStorage.getItem(KEY + "-semilla")) || store.map(f => f.id);
-  const nuevas = SEMILLA.filter(f => !vistas.includes(f.id) && !store.some(g => g.id === f.id));
-  if (nuevas.length) { store.push(...structuredClone(nuevas)); save(); }
-  localStorage.setItem(KEY + "-semilla", JSON.stringify(SEMILLA.map(f => f.id)));
-} catch {}
+const put = f => api(`docs/facturas/${f.id}`, { method: "PUT", body: f });
+let store = await api("docs/facturas");
+if (!store.length) { store = structuredClone(SEMILLA); await Promise.all(store.map(put)); } // primera vez: factura de Fisioma
 let cur = null;
+const saveCur = autosaver(() => put(cur));
+const save = () => { if (cur) { saveCur(); document.getElementById("docTitle").textContent = `Factura ${cur.numero} · ${cur.cliente.nombre}`; } };
 
 /* ===== Utilidades ===== */
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -217,6 +218,8 @@ function panel() {
   document.getElementById("panel").hidden = false;
   document.getElementById("edit").hidden = true;
   document.getElementById("editBtns").hidden = true;
+  document.getElementById("topbar").hidden = true;
+  history.replaceState(null, "", "/admin/facturas");
   const q = document.getElementById("q").value.toLowerCase();
   const lista = store.filter(f => !q || [f.numero, f.cliente.nombre, ...f.lineas.map(l => l.concepto)].join(" ").toLowerCase().includes(q))
     .sort((a, b) => b.numero.localeCompare(a.numero));
@@ -246,6 +249,9 @@ function editar(id) {
   document.getElementById("panel").hidden = true;
   document.getElementById("edit").hidden = false;
   document.getElementById("editBtns").hidden = false;
+  document.getElementById("topbar").hidden = false;
+  document.getElementById("docTitle").textContent = `Factura ${cur.numero} · ${cur.cliente.nombre}`;
+  history.replaceState(null, "", "/admin/facturas#" + id);
   form(); sheet();
 }
 
@@ -300,7 +306,7 @@ function sheet() {
   const f = cur, t = totales(f), e = f.emisor, c = f.cliente;
   document.getElementById("sheet").innerHTML = `
     <div class="s-top">
-      <div class="me"><div class="mark"><img src="../assets/logo.svg" alt="" /><span>majosoft<i>.</i></span></div><h1>Factura</h1></div>
+      <div class="me"><div class="mark"><img src="/assets/logo.svg" alt="" /><span>majosoft<i>.</i></span></div><h1>Factura</h1></div>
       <div class="meta"><b>Nº ${esc(f.numero)}</b>Fecha: ${fecha(f.fecha)}${f.vencimiento ? `<br />Vencimiento: ${fecha(f.vencimiento)}` : ""}</div>
     </div>
     <div class="parties">
@@ -367,21 +373,22 @@ document.getElementById("rows").onclick = ev => { const tr = ev.target.closest("
 document.getElementById("q").oninput = panel;
 document.getElementById("toPanel").onclick = ev => { ev.preventDefault(); panel(); };
 document.getElementById("bPrint").onclick = () => window.print();
-document.getElementById("bNew").onclick = () => {
+document.getElementById("bNew").onclick = async () => {
   const ult = store.at(-1);
   const hoy = new Date().toISOString().slice(0, 10);
   const f = { id: "f" + Date.now(), numero: siguienteNumero(), fecha: hoy, vencimiento: "", estado: "borrador",
     cliente: { nombre: "Nuevo cliente", nif: "", direccion: "", email: "", logo: "" }, periodo: { desde: "", hasta: "" },
     lineas: [{ concepto: "", detalle: "", cantidad: 1, precio: 0 }], iva: 21, notas: "", emisor: { ...(ult?.emisor || EMISOR) } };
-  store.push(f); save(); editar(f.id);
+  store.push(f); await put(f); editar(f.id);
 };
-document.getElementById("bDup").onclick = () => {
+document.getElementById("bDup").onclick = async () => {
   const f = { ...structuredClone(cur), id: "f" + Date.now(), numero: siguienteNumero(), estado: "borrador", fecha: new Date().toISOString().slice(0, 10) };
-  store.push(f); save(); editar(f.id);
+  store.push(f); await put(f); editar(f.id);
 };
-document.getElementById("bDel").onclick = () => {
+document.getElementById("bDel").onclick = async () => {
   if (!confirm(`¿Eliminar la factura ${cur.numero}?`)) return;
-  store = store.filter(f => f !== cur); save(); panel();
+  await api(`docs/facturas/${cur.id}`, { method: "DELETE" });
+  store = store.filter(f => f !== cur); toast("Factura eliminada"); panel();
 };
 document.getElementById("bExport").onclick = () => {
   const a = document.createElement("a");
@@ -391,13 +398,17 @@ document.getElementById("bExport").onclick = () => {
 const file = document.getElementById("file");
 document.getElementById("bImport").onclick = () => file.click();
 file.onchange = async () => {
-  try { const d = JSON.parse(await file.files[0].text()); if (!Array.isArray(d)) throw 0; if (confirm("Esto reemplaza las facturas de este navegador. ¿Continuar?")) { store = d; save(); panel(); } }
-  catch { alert("El archivo no es una copia válida."); }
+  try {
+    const d = JSON.parse(await file.files[0].text()); if (!Array.isArray(d)) throw 0;
+    if (!confirm(`Se importarán ${d.length} facturas (las que tengan el mismo identificador se sobrescriben). ¿Continuar?`)) return;
+    await Promise.all(d.map(put)); store = await api("docs/facturas"); toast("Facturas importadas"); panel();
+  } catch { toast("El archivo no es una copia válida", true); }
   file.value = "";
 };
 
 const abrir = store.find(f => "#" + f.id === location.hash);
-abrir ? editar(abrir.id) : panel();
+if (new URLSearchParams(location.search).has("nuevo")) document.getElementById("bNew").click();
+else abrir ? editar(abrir.id) : panel();
 </script>
 </body>
 </html>
