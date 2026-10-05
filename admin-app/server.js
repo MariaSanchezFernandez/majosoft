@@ -248,7 +248,7 @@ app.post("/admin/api/password", (req, res) => {
 });
 
 /* ===== Documentos: presupuestos y facturas ===== */
-const KINDS = new Set(["presupuestos", "facturas"]);
+const KINDS = new Set(["presupuestos", "facturas", "ajustes"]);
 const ID = /^[\w-]{1,64}$/;
 app.param("kind", (req, res, next, kind) => KINDS.has(kind) ? next() : res.status(404).json({ error: "No existe" }));
 
