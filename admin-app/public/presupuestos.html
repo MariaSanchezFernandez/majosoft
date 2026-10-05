@@ -127,6 +127,11 @@
     table.sum tr.tot td:first-child { border-radius: 3mm 0 0 3mm; }
     table.sum tr.tot td:last-child { border-radius: 0 3mm 3mm 0; color: var(--lime); }
 
+    .cuota { display: grid; grid-template-columns: 1fr auto; gap: 8mm; align-items: center; background: var(--ink); color: var(--cream); border-radius: 4mm; padding: 7mm; margin: 2mm 0 4mm; break-inside: avoid; }
+    .cuota small { font-weight: 800; letter-spacing: .12em; text-transform: uppercase; font-size: 7.5pt; color: var(--lime); }
+    .cuota p { margin: 2mm 0 0; color: #c9c9bd; }
+    .cuota .price { font-size: 28pt; font-weight: 900; letter-spacing: -.04em; line-height: 1; text-align: right; color: var(--lime); white-space: nowrap; }
+    .cuota .price span { display: block; font-size: 8pt; font-weight: 600; letter-spacing: 0; color: #c9c9bd; margin-top: 2mm; }
     .callout { background: var(--cream); border-left: 4px solid var(--lime); border-radius: 0 3mm 3mm 0; padding: 4mm 5mm; margin: 3mm 0; break-inside: avoid; }
     .bono { display: grid; grid-template-columns: 1fr auto; gap: 6mm; align-items: center; background: var(--lime); border-radius: 4mm; padding: 6mm; margin-top: 4mm; break-inside: avoid; }
     .bono small { font-weight: 800; letter-spacing: .12em; text-transform: uppercase; font-size: 7.5pt; }
@@ -163,7 +168,7 @@
       .topbar, .editor { display: none !important; }
       .app { display: block; height: auto; }
       .preview-wrap { padding: 0; background: #fff; overflow: visible; }
-      .doc { width: 210mm; zoom: 1; gap: 0; }
+      .doc { width: 210mm; zoom: 1 !important; gap: 0; }
       .page { box-shadow: none; break-after: page; }
       .page:last-child { break-after: auto; }
     }
@@ -193,6 +198,9 @@
 <script type="module">
 import { mountShell, api, autosaver, toast } from "/admin/panel.js";
 await mountShell("presupuestos");
+// Clientes conocidos (de facturas y presupuestos) para el desplegable
+const clientes = await Promise.all([api("docs/facturas"), api("docs/presupuestos")]).then(([f, p]) =>
+  [...new Set([...f.map(x => x.cliente?.nombre), ...p.map(x => x.cliente)].map(n => String(n || "").trim()).filter(n => n && n !== "Nombre del cliente" && n !== "Nuevo cliente"))].sort((a, b) => a.localeCompare(b, "es")));
 
 /* ===== Plantilla de ejemplo: presupuesto Academia Online ===== */
 const EJEMPLO = {
@@ -268,6 +276,7 @@ const VACIO = {
 
 let D = null;
 const migrar = d => {
+  d.cuota ??= { activo: false, precio: "", nota: "", etiqueta: "", detalle: "", texto: "" };
   if (d.totalConIva == null) { d.auto = true; d.totalConIva = Number(d.totalRedondeado) || Math.round(d.modulos.reduce((s, m) => s + Number(m.precio || 0), 0) * (1 + d.iva / 100)); }
   delete d.totalRedondeado; return d;
 };
@@ -318,7 +327,7 @@ function render() {
     ${D.tagline ? `<p class="tag">${esc(D.tagline)}</p>` : ""}
     <div class="cover-meta">
       <div><small>Cliente</small><b>${esc(D.cliente) || "—"}</b></div>
-      <div><small>Inversión</small><b>${eur(c.total)} IVA incl.</b></div>
+      <div><small>Inversión</small><b>${D.cuota?.activo ? `${esc(D.cuota.precio)} ${esc(D.cuota.nota || "")}` : `${eur(c.total)} IVA incl.`}</b></div>
       <div><small>Lanzamiento objetivo</small><b>${esc(D.lanzamiento) || "—"}</b></div>
     </div>
   </section>
@@ -326,7 +335,7 @@ function render() {
     ${D.objetivo ? `<h2 class="h2">Objetivo del proyecto</h2>${paras(D.objetivo)}` : ""}
     ${D.porque.length ? `<h2 class="h2">${esc(D.porqueTitulo || "¿Por qué este enfoque?")}</h2>${paras(D.porqueIntro)}<div class="why">${porque}</div>` : ""}
 
-    <h2 class="h2">Módulos del proyecto</h2>
+    <h2 class="h2">${esc(D.modulosTitulo || "Módulos del proyecto")}</h2>
     ${D.modulos.map((m, i) => `
       <div class="mod">
         <div class="mod-n">${n(i)}</div>
@@ -338,6 +347,12 @@ function render() {
       </div>`).join("")}
 
     <h2 class="h2">Resumen económico</h2>
+    ${D.cuota?.activo ? `
+    <div class="cuota">
+      <div><small>${esc(D.cuota.etiqueta || "Cuota mensual")}</small><p>${esc(D.cuota.detalle || "")}</p></div>
+      <div class="price">${esc(D.cuota.precio)}<span>${esc(D.cuota.nota || "")}</span></div>
+    </div>
+    ${D.cuota.texto ? paras(D.cuota.texto) : ""}` : `
     <table class="sum">
       <thead><tr><th>Módulo</th><th class="r">Horas</th><th class="r">Precio</th></tr></thead>
       <tbody>
@@ -346,7 +361,7 @@ function render() {
         <tr class="iva"><td>IVA (${D.iva}%)</td><td></td><td class="r">${eur(c.iva)}</td></tr>
         <tr class="tot"><td>Total (IVA incluido)</td><td class="r">${c.horas}h</td><td class="r">${eur(c.total)}</td></tr>
       </tbody>
-    </table>
+    </table>`}
 
     <h2 class="h2">Condiciones de pago</h2>
     <div class="callout">${esc(D.formaPago)}</div>
@@ -366,7 +381,7 @@ function render() {
       </div>
       ${D.mant.nota ? `<div class="callout">${esc(D.mant.nota)}</div>` : ""}` : ""}
 
-    ${D.garantia.length ? `<h2 class="h2">Garantía y arreglos</h2>${list(D.garantia)}` : ""}
+    ${D.garantia.length ? `<h2 class="h2">${esc(D.garantiaTitulo || "Garantía y arreglos")}</h2>${list(D.garantia)}` : ""}
 
     ${D.requisitos.length ? `<h2 class="h2">Requisitos por parte del cliente</h2>${paras(D.requisitosIntro)}
       <div class="req">${D.requisitos.map(r => `<div><h4>${esc(r.titulo)}</h4>${list(r.items)}</div>`).join("")}</div>` : ""}
@@ -383,6 +398,15 @@ function render() {
 
 /* Reparte los bloques del documento en hojas A4: si un bloque no cabe,
    pasa a la siguiente hoja; los títulos se llevan con su primer bloque. */
+// La vista previa se ajusta al ancho disponible: se ve la hoja entera, sin zoom ni desplazamiento lateral
+function ajustarVista() {
+  const wrap = document.querySelector(".preview-wrap"), doc = document.getElementById("doc");
+  if (!wrap || !doc || matchMedia("(max-width: 900px)").matches) return;
+  const disponible = wrap.clientWidth - 64, hoja = 210 * 96 / 25.4;
+  doc.style.zoom = Math.min(1, disponible / hoja).toFixed(3);
+}
+addEventListener("resize", ajustarVista);
+
 function paginar() {
   const doc = document.getElementById("doc");
   const flow = document.createElement("div");
@@ -440,6 +464,7 @@ function paginar() {
     body.appendChild(b);
   }
   pages.forEach((pg, i) => pg.querySelector(".n").textContent = `Página ${i + 1} de ${pages.length}`);
+  ajustarVista();
   flow.remove();
 }
 
@@ -450,7 +475,7 @@ const txt = (label, path, opts = {}) => {
   if (t === "area") return `<label class="f">${label}<textarea data-p="${path}" data-t="text">${esc(v)}</textarea></label>`;
   if (t === "lines") return `<label class="f">${label}<textarea data-p="${path}" data-t="lines" style="min-height:${opts.h || 110}px">${esc((v || []).join("\n"))}</textarea><div class="hint">Un punto por línea</div></label>`;
   if (t === "check") return `<label class="chk"><input type="checkbox" data-p="${path}" data-t="bool" ${v ? "checked" : ""}/> ${label}</label>`;
-  return `<label class="f">${label}<input type="${t}" data-p="${path}" data-t="${t === "number" ? "num" : "text"}" value="${esc(v)}" ${opts.ph ? `placeholder="${esc(opts.ph)}"` : ""}/></label>`;
+  return `<label class="f">${label}<input type="${t}" data-p="${path}" data-t="${t === "number" ? "num" : "text"}" value="${esc(v)}" ${opts.ph ? `placeholder="${esc(opts.ph)}"` : ""} ${opts.list ? `list="${opts.list}" autocomplete="off"` : ""}/></label>`;
 };
 const sec = (title, body, open) => `<details class="sec" ${open ? "open" : ""}><summary>${title}</summary><div class="sec-body">${body}</div></details>`;
 const head = (label, arr, i) => `<div class="item-head">${label}<span class="tools"><button data-act="up" data-arr="${arr}" data-i="${i}" title="Subir">↑</button><button data-act="down" data-arr="${arr}" data-i="${i}" title="Bajar">↓</button><button data-act="del" data-arr="${arr}" data-i="${i}" title="Eliminar">✕</button></span></div>`;
@@ -461,7 +486,8 @@ function buildEditor() {
   document.getElementById("editor").innerHTML =
     sec("Portada", `
       ${txt("Etiqueta", "kicker")}${txt("Título", "titulo")}${txt("Subtítulo", "subtitulo")}${txt("Frase destacada", "tagline")}
-      ${txt("Cliente", "cliente")}
+      ${txt("Cliente", "cliente", { list: "clientesList", ph: "Elige o escribe un cliente" })}
+      <datalist id="clientesList">${clientes.map(c => `<option value="${esc(c)}"></option>`).join("")}</datalist>
       <div class="row">${txt("Referencia", "referencia")}${txt("Fecha", "fecha", { type: "date" })}</div>
       ${txt("Lanzamiento objetivo", "lanzamiento")}`, o("Portada")) +
     sec("Objetivo y enfoque", `
@@ -476,6 +502,10 @@ function buildEditor() {
       ${txt("Puntos", `modulos.${i}.items`, { type: "lines" })}</div>`).join("") +
       `<button class="add" data-add="modulos">+ Añadir módulo</button>`, o("Módulos")) +
     sec("Precio y pago", `
+      ${txt("Es una cuota mensual (sin tabla de módulos)", "cuota.activo", { type: "check" })}
+      <div class="row">${txt("Cuota", "cuota.precio", { ph: "75 €/mes" })}${txt("Nota", "cuota.nota", { ph: "IVA incluido" })}</div>
+      ${txt("Etiqueta", "cuota.etiqueta", { ph: "Cuota mensual — todo incluido" })}${txt("Detalle", "cuota.detalle")}${txt("Texto bajo la cuota", "cuota.texto", { type: "area" })}
+      ${txt("Título de la sección de módulos", "modulosTitulo", { ph: "Módulos del proyecto" })}
       ${txt("Cálculo automático desde el precio final", "auto", { type: "check" })}
       <div class="row">${txt("Precio final (€ IVA incluido)", "totalConIva", { type: "number" })}${txt("IVA (%)", "iva", { type: "number" })}</div>
       <div class="hint" id="calcHint"></div>
@@ -495,7 +525,8 @@ function buildEditor() {
       ${txt("Qué no incluye", "mant.noIncluye", { type: "lines", h: 140 })}
       ${txt("Nota final", "mant.nota", { type: "area" })}`, o("Mantenimiento")) +
     sec("Garantía y requisitos", `
-      ${txt("Garantía y arreglos", "garantia", { type: "lines" })}
+      ${txt("Título del bloque de condiciones", "garantiaTitulo", { ph: "Garantía y arreglos" })}
+      ${txt("Garantía, arreglos o condiciones", "garantia", { type: "lines" })}
       ${txt("Introducción de requisitos", "requisitosIntro", { type: "area" })}
       ${D.requisitos.map((r, i) => `<div class="item">${head("Grupo " + (i + 1), "requisitos", i)}
         ${txt("Título", `requisitos.${i}.titulo`)}${txt("Requisitos", `requisitos.${i}.items`, { type: "lines" })}</div>`).join("")}

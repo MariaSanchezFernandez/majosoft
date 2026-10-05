@@ -263,6 +263,15 @@ const siguienteNumero = () => {
 };
 
 /* ===== Panel ===== */
+// Clientes conocidos: los datos más recientes de cada cliente facturado
+const clientesConocidos = () => {
+  const m = new Map();
+  [...store].sort((a, b) => (a.updated_at || 0) - (b.updated_at || 0)).forEach(f => {
+    const n = String(f.cliente?.nombre || "").trim();
+    if (n && n !== "Nuevo cliente" && n !== "Nombre del cliente") m.set(n.toLowerCase(), { ...f.cliente });
+  });
+  return [...m.values()].sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+};
 let filtro = "";
 function panel() {
   cur = null;
@@ -322,7 +331,8 @@ function form() {
       ${fld("Resumen (si no hay periodo)", "resumen")}
     </section>
     <section class="sec"><h3>Cliente</h3>
-      ${fld("Nombre / razón social", "cliente.nombre")}
+      <label class="f">Nombre / razón social<input type="text" data-p="cliente.nombre" value="${esc(cur.cliente.nombre || "")}" list="clientesList" autocomplete="off" placeholder="Elige o escribe un cliente" /></label>
+      <datalist id="clientesList">${clientesConocidos().map(c => `<option value="${esc(c.nombre)}">${esc(c.nif || "")}</option>`).join("")}</datalist>
       <div class="row">${fld("NIF / CIF", "cliente.nif")}${fld("Email", "cliente.email")}</div>
       ${fld("Dirección", "cliente.direccion", "area")}
       <label class="f">Logo del cliente<input type="file" accept="image/*" id="logo" /></label>
@@ -425,6 +435,12 @@ formEl.addEventListener("input", ev => {
   sheet(); save();
 });
 formEl.addEventListener("change", async ev => {
+  // Al elegir un cliente conocido se completan sus datos
+  if (ev.target.dataset.p === "cliente.nombre") {
+    const c = clientesConocidos().find(x => x.nombre.toLowerCase() === ev.target.value.trim().toLowerCase());
+    if (c) { Object.assign(cur.cliente, { nif: c.nif || "", direccion: c.direccion || "", email: c.email || "", logo: c.logo || cur.cliente.logo || "" }); form(); sheet(); save(); toast(`Datos de ${c.nombre} completados`); }
+    return;
+  }
   if (ev.target.id === "emisorPropio") {
     if (ev.target.checked) { cur.emisor = structuredClone(EMISOR_G); cur.emisorPropio = true; }
     else if (confirm("¿Volver a los datos globales? Se perderán los datos propios de esta factura.")) { cur.emisorPropio = false; cur.emisor = EMISOR_G; }
