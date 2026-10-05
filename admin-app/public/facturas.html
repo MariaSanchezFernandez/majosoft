@@ -15,58 +15,80 @@
     * { box-sizing: border-box; }
     html, body { margin: 0; }
     body { font-family: Inter, system-ui, sans-serif; background: var(--cream); color: var(--ink); font-size: 14px; }
-    .topbar { display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: #fff; color: var(--ink); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
-    .topbar .doc-title { font-weight: 800; margin-right: auto; }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; margin-right: auto; }
-    .brand img { height: 22px; filter: invert(1); }
-    .brand span { font-weight: 500; color: #a9a99c; }
-    .topbar a { color: #a9a99c; text-decoration: none; font-size: 13px; font-weight: 600; margin-right: 6px; }
-    .topbar a:hover, .topbar a.on { color: var(--lime); }
-    .btn { border: 1px solid var(--line); text-decoration: none; background: transparent; color: inherit; padding: 8px 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
-    .btn:hover { border-color: var(--lime); }
-    .btn--lime { background: var(--lime); color: var(--ink); border-color: var(--lime); }
-    .btn--dark { border-color: var(--line); color: var(--ink); background: #fff; }
-    .btn--dark:hover { border-color: var(--ink); }
+    [hidden] { display: none !important; }
+    /* ===== Botones (estilo del panel) ===== */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 15px; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: var(--ink); font: inherit; font-weight: 700; font-size: 13px; cursor: pointer; text-decoration: none; white-space: nowrap; }
+    .btn:hover { border-color: var(--ink); }
+    .btn--ink { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+    .btn--ink:hover { background: #2a2b26; }
+    .btn--danger:hover { border-color: #b42318; color: #b42318; }
 
-    /* ===== Panel ===== */
-    .panel { max-width: 1100px; padding: 34px 32px 60px; }
-    .panel h1 { margin: 0 !important; }
-    .panel h1 { font-size: 28px; letter-spacing: -.03em; margin: 0 0 18px; }
-    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
-    .kpi { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
-    .kpi small { color: var(--muted); font-size: 12px; font-weight: 600; }
-    .kpi b { display: block; font-size: 22px; letter-spacing: -.02em; margin-top: 4px; }
-    .tools { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-    .tools input { flex: 1; min-width: 200px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 999px; font: inherit; }
-    table.list { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
-    table.list th { text-align: left; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--line); }
-    table.list td { padding: 12px 14px; border-bottom: 1px solid #eeede5; }
+    /* ===== Cabecera del editor ===== */
+    .topbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 10px; padding: 12px 24px; background: #fff; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+    .topbar .doc-title { font-weight: 800; letter-spacing: -.01em; margin-right: auto; }
+    .topbar .doc-title small { display: block; font-size: 11.5px; color: var(--muted); font-weight: 600; }
+    #editBtns { display: flex; gap: 8px; }
+
+    /* ===== Listado ===== */
+    .panel { max-width: 1180px; padding: 34px 32px 60px; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 14px; }
+    .kpi { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; }
+    .kpi small { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .kpi b { display: block; font-size: 26px; letter-spacing: -.03em; margin-top: 6px; }
+    .kpi span { font-size: 12px; color: var(--muted); }
+    .kpi.dark { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+    .kpi.dark small, .kpi.dark span { color: #a9a99c; } .kpi.dark b { color: var(--lime); }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+    .card-tools { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+    .tabs { display: flex; gap: 4px; background: var(--cream); padding: 4px; border-radius: 10px; }
+    .tabs button { border: none; background: none; padding: 7px 12px; border-radius: 7px; font: inherit; font-size: 12.5px; font-weight: 700; color: var(--muted); cursor: pointer; }
+    .tabs button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(21,22,26,.1); }
+    .search { flex: 1; max-width: 340px; min-width: 200px; padding: 9px 12px 9px 34px; border: 1px solid var(--line); border-radius: 10px; font: inherit; font-size: 13px; background: #fcfcf8 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%236b6b62' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") no-repeat 11px center; }
+    .search:focus { outline: 3px solid rgba(214,224,34,.5); border-color: var(--ink); }
+    table.list { width: 100%; border-collapse: collapse; }
+    table.list th { text-align: left; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 11px 16px; background: #fafaf5; border-bottom: 1px solid var(--line); }
+    table.list td { padding: 14px 16px; border-bottom: 1px solid #eeede5; font-size: 13.5px; }
     table.list tr:last-child td { border-bottom: none; }
     table.list tbody tr { cursor: pointer; }
-    table.list tbody tr:hover { background: #fafaf5; }
+    table.list tbody tr:hover td { background: #fafaf5; }
+    table.list .num { font-weight: 800; }
+    table.list .cli { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+    table.list .cli img, table.list .cli i { width: 26px; height: 26px; border-radius: 50%; object-fit: contain; flex: none; }
+    table.list .cli i { background: var(--cream); display: grid; place-items: center; font-style: normal; font-size: 11px; font-weight: 800; color: var(--muted); }
+    table.list .muted { color: var(--muted); }
     .r { text-align: right; white-space: nowrap; }
-    .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; }
-    .pill.pendiente { background: #fff3cd; color: #7a5b00; }
-    .pill.pagada { background: var(--lime); color: var(--ink); }
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; text-transform: capitalize; }
+    .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .pill.pendiente { background: #fff5d6; color: #8a6200; }
+    .pill.pagada { background: #e6f3ea; color: #2f7d4f; }
     .pill.borrador { background: #eeede5; color: var(--muted); }
-    .empty { text-align: center; padding: 40px; color: var(--muted); }
+    .empty { text-align: center; padding: 48px; color: var(--muted); }
     .scroll { overflow-x: auto; }
+    @media (max-width: 1100px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .panel { padding: 24px 16px 40px; } .kpis { grid-template-columns: 1fr; } }
 
     /* ===== Editor ===== */
-    .edit { display: grid; grid-template-columns: 420px 1fr; height: calc(100vh - 58px); }
-    .form { overflow-y: auto; padding: 18px 18px 60px; border-right: 1px solid var(--line); }
-    .prev { overflow: auto; padding: 32px; background: #dcdbd0; }
-    fieldset { border: 1px solid var(--line); background: #fff; border-radius: 14px; padding: 6px 16px 16px; margin: 0 0 10px; }
-    legend { font-weight: 700; padding: 0 6px; }
-    label.f { display: block; margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--muted); }
-    label.f input, label.f textarea, label.f select { display: block; width: 100%; margin-top: 4px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 13px; color: var(--ink); background: #fcfcf8; }
-    label.f textarea { min-height: 60px; resize: vertical; }
+    .edit { display: grid; grid-template-columns: 430px 1fr; height: calc(100vh - 63px); }
+    .form { overflow-y: auto; padding: 20px 20px 60px; border-right: 1px solid var(--line); background: var(--cream); }
+    .prev { overflow: auto; padding: 32px; background: #e4e3d9; }
+    .sec { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px 18px; margin: 0 0 12px; }
+    .sec h3 { margin: 0 0 4px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    label.f { display: block; margin-top: 12px; font-size: 12px; font-weight: 700; color: var(--ink2); }
+    label.f input, label.f textarea, label.f select { display: block; width: 100%; margin-top: 5px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; font: inherit; font-size: 13.5px; color: var(--ink); background: #fcfcf8; }
+    label.f input:focus, label.f textarea:focus, label.f select:focus { outline: 3px solid rgba(214,224,34,.5); border-color: var(--ink); background: #fff; }
+    label.f textarea { min-height: 64px; resize: vertical; }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .line { border: 1px dashed var(--line); border-radius: 10px; padding: 2px 10px 10px; margin-top: 10px; position: relative; }
-    .line .x { position: absolute; top: 6px; right: 8px; border: none; background: none; cursor: pointer; color: var(--muted); }
-    .add { margin-top: 10px; width: 100%; border: 1px dashed var(--ink2); background: transparent; padding: 8px; border-radius: 8px; cursor: pointer; font: inherit; font-weight: 600; }
-    .add:hover { background: var(--lime); }
-    .logo-prev { max-height: 40px; margin-top: 8px; display: block; }
+    .line { background: #fafaf5; border: 1px solid #eeede5; border-radius: 11px; padding: 4px 12px 12px; margin-top: 12px; position: relative; }
+    .line .x { position: absolute; top: 8px; right: 8px; border: 1px solid var(--line); background: #fff; border-radius: 7px; width: 26px; height: 26px; cursor: pointer; color: var(--muted); }
+    .line .x:hover { color: #b42318; border-color: #b42318; }
+    .add { margin-top: 12px; width: 100%; border: 1px solid var(--line); background: #fff; padding: 9px; border-radius: 9px; cursor: pointer; font: inherit; font-size: 13px; font-weight: 700; }
+    .add:hover { border-color: var(--ink); }
+    .logo-row { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+    .logo-prev { height: 40px; width: auto; }
+    .logo-row .add { width: auto; margin: 0; padding: 7px 12px; }
+    @media (max-width: 900px) { .edit { height: auto; } }
+    @media screen and (min-width: 901px) and (max-width: 1700px) { .prev .sheet { zoom: .8; } }
 
     /* ===== Factura A4 ===== */
     .sheet { width: 210mm; height: 297mm; margin: 0 auto; background: #fff; box-shadow: 0 20px 60px rgba(21,22,26,.18); display: flex; flex-direction: column; font-size: 9.5pt; line-height: 1.5; padding: 16mm 18mm 0; position: relative; overflow: hidden; }
@@ -133,29 +155,36 @@
 <body>
   <header class="topbar" id="topbar" hidden>
     <button class="btn" id="toPanel">← Facturas</button>
-    <span class="doc-title" id="docTitle"></span>
+    <span class="doc-title"><small>Factura</small><span id="docTitle"></span></span>
     <span class="save-state" data-save-state></span>
     <span id="editBtns" hidden>
+      <button class="btn btn--danger" id="bDel">Eliminar</button>
       <button class="btn" id="bDup">Duplicar</button>
-      <button class="btn" id="bDel">Eliminar</button>
-      <button class="btn btn--lime" id="bPrint">Exportar PDF</button>
+      <button class="btn btn--ink" id="bPrint">Descargar PDF</button>
     </span>
   </header>
 
   <section class="panel" id="panel">
-    <div class="page-head"><div><div class="crumbs">Comercial</div><h1>Facturas</h1><p>Emisión, numeración y seguimiento de cobros.</p></div></div>
-    <div class="kpis" id="kpis"></div>
-    <div class="tools">
-      <input id="q" placeholder="Buscar por cliente, número o concepto…" />
-      <button class="btn btn--dark" id="bExport">Exportar copia</button>
-      <button class="btn btn--dark" id="bImport">Importar</button>
-      <button class="btn btn--lime" id="bNew">+ Nueva factura</button>
-      <input type="file" id="file" accept="application/json" hidden />
+    <div class="page-head">
+      <div><div class="crumbs">Comercial</div><h1>Facturas</h1><p>Emisión, numeración y seguimiento de cobros.</p></div>
+      <div class="actions">
+        <button class="btn" id="bImport">Importar</button>
+        <button class="btn" id="bExport">Exportar copia</button>
+        <button class="btn btn--ink" id="bNew">+ Nueva factura</button>
+        <input type="file" id="file" accept="application/json" hidden />
+      </div>
     </div>
-    <div class="scroll"><table class="list">
-      <thead><tr><th>Nº</th><th>Fecha</th><th>Cliente</th><th>Concepto</th><th>Estado</th><th class="r">Total</th></tr></thead>
-      <tbody id="rows"></tbody>
-    </table></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="card">
+      <div class="card-tools">
+        <div class="tabs" id="tabs"><button data-f="" class="on">Todas</button><button data-f="pendiente">Pendientes</button><button data-f="pagada">Pagadas</button><button data-f="borrador">Borradores</button></div>
+        <input class="search" id="q" placeholder="Buscar cliente, número o concepto" />
+      </div>
+      <div class="scroll"><table class="list">
+        <thead><tr><th>Nº</th><th>Cliente</th><th>Concepto</th><th>Fecha</th><th>Estado</th><th class="r">Total</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+    </div>
   </section>
 
   <section class="edit" id="edit" hidden>
@@ -194,7 +223,7 @@ let store = await api("docs/facturas");
 if (!store.length) { store = structuredClone(SEMILLA); await Promise.all(store.map(put)); } // primera vez: factura de Fisioma
 let cur = null;
 const saveCur = autosaver(() => put(cur));
-const save = () => { if (cur) { saveCur(); document.getElementById("docTitle").textContent = `Factura ${cur.numero} · ${cur.cliente.nombre}`; } };
+const save = () => { if (cur) { saveCur(); document.getElementById("docTitle").textContent = `Nº ${cur.numero} · ${cur.cliente.nombre}`; } };
 
 /* ===== Utilidades ===== */
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -213,6 +242,7 @@ const siguienteNumero = () => {
 };
 
 /* ===== Panel ===== */
+let filtro = "";
 function panel() {
   cur = null;
   document.getElementById("panel").hidden = false;
@@ -221,20 +251,24 @@ function panel() {
   document.getElementById("topbar").hidden = true;
   history.replaceState(null, "", "/admin/facturas");
   const q = document.getElementById("q").value.toLowerCase();
-  const lista = store.filter(f => !q || [f.numero, f.cliente.nombre, ...f.lineas.map(l => l.concepto)].join(" ").toLowerCase().includes(q))
+  const lista = store.filter(f => (!filtro || f.estado === filtro) && (!q || [f.numero, f.cliente.nombre, ...f.lineas.map(l => l.concepto)].join(" ").toLowerCase().includes(q)))
     .sort((a, b) => b.numero.localeCompare(a.numero));
   const y = String(new Date().getFullYear());
   const sum = arr => arr.reduce((s, f) => s + totales(f).total, 0);
   const año = store.filter(f => f.fecha.startsWith(y) && f.estado !== "borrador");
+  const pend = store.filter(f => f.estado === "pendiente"), pag = store.filter(f => f.estado === "pagada");
   document.getElementById("kpis").innerHTML = `
-    <div class="kpi"><small>Facturado ${y}</small><b>${eur(sum(año))}</b></div>
-    <div class="kpi"><small>Pendiente de cobro</small><b>${eur(sum(store.filter(f => f.estado === "pendiente")))}</b></div>
-    <div class="kpi"><small>Cobrado</small><b>${eur(sum(store.filter(f => f.estado === "pagada")))}</b></div>
-    <div class="kpi"><small>Facturas</small><b>${store.length}</b></div>`;
+    <div class="kpi dark"><small>Facturado ${y}</small><b>${eur(sum(año))}</b><span>IVA incluido</span></div>
+    <div class="kpi"><small>Pendiente de cobro</small><b>${eur(sum(pend))}</b><span>${pend.length} ${pend.length === 1 ? "factura" : "facturas"}</span></div>
+    <div class="kpi"><small>Cobrado</small><b>${eur(sum(pag))}</b><span>${pag.length} ${pag.length === 1 ? "factura" : "facturas"}</span></div>
+    <div class="kpi"><small>Facturas emitidas</small><b>${store.filter(f => f.estado !== "borrador").length}</b><span>${store.filter(f => f.estado === "borrador").length} en borrador</span></div>`;
+  const ini = n => String(n || "?").trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase();
   document.getElementById("rows").innerHTML = lista.length ? lista.map(f => `
-    <tr data-id="${f.id}"><td><b>${esc(f.numero)}</b></td><td>${fecha(f.fecha)}</td><td>${esc(f.cliente.nombre)}</td>
-    <td>${esc(f.lineas[0]?.concepto || "")}</td><td><span class="pill ${f.estado}">${f.estado}</span></td><td class="r"><b>${eur(totales(f).total)}</b></td></tr>`).join("")
-    : `<tr><td colspan="6" class="empty">No hay facturas</td></tr>`;
+    <tr data-id="${f.id}"><td class="num">${esc(f.numero)}</td>
+    <td><span class="cli">${f.cliente.logo ? `<img src="${esc(f.cliente.logo)}" alt="" />` : `<i>${esc(ini(f.cliente.nombre))}</i>`}${esc(f.cliente.nombre)}</span></td>
+    <td class="muted">${esc(f.resumen || f.lineas[0]?.concepto || "")}</td><td class="muted">${fecha(f.fecha)}</td>
+    <td><span class="pill ${f.estado}">${f.estado}</span></td><td class="r"><b>${eur(totales(f).total)}</b></td></tr>`).join("")
+    : `<tr><td colspan="6" class="empty">${store.length ? "Ninguna factura coincide con el filtro." : "Aún no hay facturas. Crea la primera con «+ Nueva factura»."}</td></tr>`;
 }
 
 /* ===== Editor ===== */
@@ -250,40 +284,40 @@ function editar(id) {
   document.getElementById("edit").hidden = false;
   document.getElementById("editBtns").hidden = false;
   document.getElementById("topbar").hidden = false;
-  document.getElementById("docTitle").textContent = `Factura ${cur.numero} · ${cur.cliente.nombre}`;
+  document.getElementById("docTitle").textContent = `Nº ${cur.numero} · ${cur.cliente.nombre}`;
   history.replaceState(null, "", "/admin/facturas#" + id);
   form(); sheet();
 }
 
 function form() {
   document.getElementById("form").innerHTML = `
-    <fieldset><legend>Factura</legend>
+    <section class="sec"><h3>Factura</h3>
       <div class="row">${fld("Número", "numero")}<label class="f">Estado<select data-p="estado">${["borrador", "pendiente", "pagada"].map(e => `<option ${cur.estado === e ? "selected" : ""}>${e}</option>`).join("")}</select></label></div>
       <div class="row">${fld("Fecha", "fecha", "date")}${fld("Vencimiento", "vencimiento", "date")}</div>
       <div class="row">${fld("Periodo desde", "periodo.desde", "date")}${fld("Periodo hasta", "periodo.hasta", "date")}</div>
       ${fld("Resumen (si no hay periodo)", "resumen")}
-    </fieldset>
-    <fieldset><legend>Cliente</legend>
+    </section>
+    <section class="sec"><h3>Cliente</h3>
       ${fld("Nombre / razón social", "cliente.nombre")}
       <div class="row">${fld("NIF / CIF", "cliente.nif")}${fld("Email", "cliente.email")}</div>
       ${fld("Dirección", "cliente.direccion", "area")}
       <label class="f">Logo del cliente<input type="file" accept="image/*" id="logo" /></label>
-      ${cur.cliente.logo ? `<img class="logo-prev" src="${cur.cliente.logo}" alt="" /><button class="add" id="logoDel">Quitar logo</button>` : ""}
-    </fieldset>
-    <fieldset><legend>Conceptos</legend>
+      ${cur.cliente.logo ? `<div class="logo-row"><img class="logo-prev" src="${cur.cliente.logo}" alt="" /><button class="add" id="logoDel">Quitar logo</button></div>` : ""}
+    </section>
+    <section class="sec"><h3>Conceptos</h3>
       ${cur.lineas.map((l, i) => `<div class="line"><button class="x" data-del="${i}" title="Eliminar">✕</button>
         ${fld("Concepto", `lineas.${i}.concepto`)}${fld("Detalle", `lineas.${i}.detalle`)}
         <div class="row">${fld("Cantidad", `lineas.${i}.cantidad`, "number")}${fld("Precio unidad (€ sin IVA)", `lineas.${i}.precio`, "number")}</div></div>`).join("")}
       <button class="add" id="addLine">+ Añadir concepto</button>
       ${fld("IVA (%)", "iva", "number")}
-    </fieldset>
-    <fieldset><legend>Emisor y cobro</legend>
+    </section>
+    <section class="sec"><h3>Emisor y cobro</h3>
       <div class="row">${fld("Titular", "emisor.titular")}${fld("NIF", "emisor.nif")}</div>
       ${fld("Dirección", "emisor.direccion")}
       <div class="row">${fld("Email", "emisor.email")}${fld("Teléfono", "emisor.telefono")}</div>
       ${fld("IBAN para transferencia", "emisor.iban")}
       ${fld("Notas", "notas", "area")}
-    </fieldset>`;
+    </section>`;
 }
 
 /* Importe en letra (euros y céntimos) */
@@ -371,6 +405,12 @@ formEl.addEventListener("click", ev => {
 
 document.getElementById("rows").onclick = ev => { const tr = ev.target.closest("tr[data-id]"); if (tr) editar(tr.dataset.id); };
 document.getElementById("q").oninput = panel;
+document.getElementById("tabs").onclick = e => {
+  const b = e.target.closest("button[data-f]"); if (!b) return;
+  filtro = b.dataset.f;
+  document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
+  panel();
+};
 document.getElementById("toPanel").onclick = ev => { ev.preventDefault(); panel(); };
 document.getElementById("bPrint").onclick = () => window.print();
 document.getElementById("bNew").onclick = async () => {
