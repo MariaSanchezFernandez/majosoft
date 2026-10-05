@@ -93,7 +93,7 @@ document.getElementById("hello").textContent = `${h < 14 ? "Buenos días" : h < 
 
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const eur = n => Number(n || 0).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: "always" }) + " €";
-const totalF = f => { const b = f.lineas.reduce((s, l) => s + l.cantidad * l.precio, 0); return Math.round(b * (1 + f.iva / 100) * 100) / 100; };
+const totalF = f => { const b = f.lineas.reduce((s, l) => s + l.cantidad * l.precio, 0); return Math.round(b * (1 + f.iva / 100 - (f.irpf ?? 7) / 100) * 100) / 100; };
 const totalP = p => p.auto ? Number(p.totalConIva || 0) : Math.round(p.modulos.reduce((s, m) => s + Number(m.precio || 0), 0) * (1 + p.iva / 100) * 100) / 100;
 
 const [fac0, pre0, sec] = await Promise.all([api("docs/facturas"), api("docs/presupuestos"), api("security")]);

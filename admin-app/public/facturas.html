@@ -122,10 +122,17 @@
     .sum { display: grid; grid-template-columns: 1fr 78mm; gap: 10mm; margin-top: 7mm; }
     .sum .words { color: var(--muted); font-size: 8.5pt; align-self: end; }
     .totals div { display: flex; justify-content: space-between; padding: 1.8mm 0; border-bottom: 1px solid var(--line); }
-    .totals .t { border: none; margin-top: 3mm; padding: 4mm 5mm; background: var(--ink); color: var(--cream); border-radius: 2mm; align-items: center; }
-    .totals .t span:first-child { font-size: 7.5pt; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; line-height: 1.4; }
-    .totals .t span:first-child small { display: block; color: #a9a99c; letter-spacing: .04em; text-transform: none; font-weight: 500; }
-    .totals .t span:last-child { font-size: 20pt; font-weight: 900; letter-spacing: -.03em; color: var(--lime); }
+    .totals .t { border: none; border-top: 1.5px solid var(--ink); margin-top: 1mm; padding: 3mm 0 0; align-items: baseline; font-weight: 800; }
+    .totals .t span:first-child { font-size: 10pt; }
+    .totals .t span:last-child { font-size: 13pt; letter-spacing: -.01em; }
+    .ed { border-radius: 1mm; outline: 1px dashed transparent; outline-offset: 1px; transition: outline-color .15s, background .15s; cursor: text; }
+    .ed:hover { outline-color: #c9c8bc; }
+    .ed:focus { outline: 1.5px solid var(--lime2); background: rgba(214,224,34,.12); }
+    .ed[data-multi] { white-space: pre-line; }
+    .ed:empty::before { content: attr(data-ph); color: #b9b8ad; }
+    .s-top .ed:hover { outline-color: #55564f; }
+    @media print { .ed, .ed:hover, .ed:focus { outline: none !important; background: none !important; } .ed:empty::before { content: ""; } }
+    .legal { margin: 6mm 0 0; padding: 3mm 4mm; border-left: 3px solid var(--line); color: var(--ink2); font-size: 8.5pt; line-height: 1.5; font-style: italic; }
     .s-bottom { margin-top: auto; padding-top: 7mm; }
     .pay { display: grid; grid-template-columns: 1.2fr 1fr; gap: 8mm; background: var(--cream); border-radius: 3mm; padding: 6mm; }
     .pay p { margin: 0; color: var(--ink2); }
@@ -197,7 +204,7 @@ import { mountShell, api, autosaver, toast } from "/admin/panel.js";
 await mountShell("facturas");
 
 /* ===== Datos (guardados en el servidor del panel) ===== */
-const EMISOR = { nombre: "Majosoft", titular: "José Manuel Borrás Rodríguez", nif: "", direccion: "Jaén, España", email: "dev@majosoft.es", telefono: "648 867 950", iban: "" };
+const EMISOR = { nombre: "Majosoft", titular: "José Manuel Borrás Rodríguez", empresa: "Majosoft · Estudio de desarrollo de software", nif: "", direccion: "Jaén, España", email: "dev@majosoft.es", telefono: "648 867 950", iban: "" };
 
 const SEMILLA = [{
   id: "f1", numero: "01", fecha: "2026-10-01", vencimiento: "2026-10-31", estado: "pendiente",
@@ -230,10 +237,14 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "
 const eur = n => Number(n || 0).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: "always" }) + " €";
 const fecha = s => s ? new Date(s + "T00:00").toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—";
 const r2 = n => Math.round(n * 100) / 100;
+const IRPF_DEFECTO = 7;
+const NOTA_IRPF = "Solicito la aplicación del tipo de retención reducido del 7% según el Art. 95.1 del Reglamento del IRPF, por encontrarme en mis tres primeros años de actividad profesional.";
 const totales = f => {
   const base = r2(f.lineas.reduce((s, l) => s + Number(l.cantidad || 0) * Number(l.precio || 0), 0));
   const iva = r2(base * f.iva / 100);
-  return { base, iva, total: r2(base + iva) };
+  // Retención de IRPF (7 % reducido en los tres primeros años de actividad)
+  const irpf = r2(base * (f.irpf ?? IRPF_DEFECTO) / 100);
+  return { base, iva, irpf, total: r2(base + iva - irpf) };
 };
 const siguienteNumero = () => {
   // Numeración correlativa: 01, 02, 03…
@@ -280,6 +291,8 @@ const fld = (label, path, type = "text") => {
 
 function editar(id) {
   cur = store.find(f => f.id === id);
+  cur.emisor ??= { ...EMISOR };
+  cur.emisor.empresa ??= EMISOR.empresa;
   document.getElementById("panel").hidden = true;
   document.getElementById("edit").hidden = false;
   document.getElementById("editBtns").hidden = false;
@@ -309,10 +322,11 @@ function form() {
         ${fld("Concepto", `lineas.${i}.concepto`)}${fld("Detalle", `lineas.${i}.detalle`)}
         <div class="row">${fld("Cantidad", `lineas.${i}.cantidad`, "number")}${fld("Precio unidad (€ sin IVA)", `lineas.${i}.precio`, "number")}</div></div>`).join("")}
       <button class="add" id="addLine">+ Añadir concepto</button>
-      ${fld("IVA (%)", "iva", "number")}
+      <div class="row">${fld("IVA (%)", "iva", "number")}<label class="f">Retención IRPF (%)<input type="number" step="0.01" data-p="irpf" value="${cur.irpf ?? IRPF_DEFECTO}" /></label></div>
     </section>
     <section class="sec"><h3>Emisor y cobro</h3>
       <div class="row">${fld("Titular", "emisor.titular")}${fld("NIF", "emisor.nif")}</div>
+      ${fld("Actividad / empresa", "emisor.empresa")}
       ${fld("Dirección", "emisor.direccion")}
       <div class="row">${fld("Email", "emisor.email")}${fld("Teléfono", "emisor.telefono")}</div>
       ${fld("IBAN para transferencia", "emisor.iban")}
@@ -336,20 +350,25 @@ function enLetra(n) {
   return `${ent(e)} euros${c ? " con " + ent(c) + " céntimos" : ""}`.replace(/uno euros/, "un euros").replace(/^un euros/, "un euro");
 }
 
+// Campos editables directamente sobre la factura
+const val = p => p.split(".").reduce((o, k) => o?.[k], cur) ?? "";
+const ed = (p, ph, multi) => `<span class="ed" contenteditable="plaintext-only" spellcheck="false" data-p="${p}" data-ph="${ph}"${multi ? ' data-multi="1"' : ""}>${esc(val(p))}</span>`;
+const edFecha = p => `<span class="ed" contenteditable="plaintext-only" spellcheck="false" data-p="${p}" data-t="fecha" data-ph="dd/mm/aaaa">${val(p) ? fecha(val(p)) : ""}</span>`;
+
 function sheet() {
   const f = cur, t = totales(f), e = f.emisor, c = f.cliente;
   document.getElementById("sheet").innerHTML = `
     <div class="s-top">
       <div class="me"><div class="mark"><img src="/assets/logo.svg" alt="" /><span>majosoft<i>.</i></span></div><h1>Factura</h1></div>
-      <div class="meta"><b>Nº ${esc(f.numero)}</b>Fecha: ${fecha(f.fecha)}${f.vencimiento ? `<br />Vencimiento: ${fecha(f.vencimiento)}` : ""}</div>
+      <div class="meta"><b>Nº ${ed("numero", "00")}</b>Fecha: ${edFecha("fecha")}${f.vencimiento ? `<br />Vencimiento: ${edFecha("vencimiento")}` : ""}</div>
     </div>
     <div class="parties">
-      <div><span class="lbl">Emisor</span><b>${esc(e.titular)}</b>Majosoft · Estudio de desarrollo de software<br />NIF: ${e.nif ? esc(e.nif) : "—"}<br />${esc(e.direccion)}<br />${esc(e.email)} · ${esc(e.telefono)}</div>
-      <div class="to">${c.logo ? `<img src="${c.logo}" alt="" />` : ""}<span class="lbl">Facturar a</span><b>${esc(c.nombre)}</b>NIF/CIF: ${c.nif ? esc(c.nif) : "—"}<br />${esc(c.direccion).replace(/\n/g, "<br />")}${c.email ? "<br />" + esc(c.email) : ""}</div>
+      <div><span class="lbl">Emisor</span><b>${ed("emisor.titular", "Nombre del emisor")}</b>${ed("emisor.empresa", "Actividad o empresa")}<br />NIF: ${ed("emisor.nif", "NIF")}<br />${ed("emisor.direccion", "Dirección fiscal", true)}<br />${ed("emisor.email", "Email")} · ${ed("emisor.telefono", "Teléfono")}</div>
+      <div class="to">${c.logo ? `<img src="${c.logo}" alt="" />` : ""}<span class="lbl">Facturar a</span><b>${ed("cliente.nombre", "Nombre del cliente")}</b>NIF/CIF: ${ed("cliente.nif", "NIF/CIF")}<br />${ed("cliente.direccion", "Dirección", true)}<br />${ed("cliente.email", "Email")}</div>
     </div>
     <div class="strip${f.vencimiento ? "" : " strip--2"}">
-      <div><small>Fecha de emisión</small><b>${fecha(f.fecha)}</b></div>
-      ${f.vencimiento ? `<div><small>Vencimiento</small><b>${fecha(f.vencimiento)}</b></div>` : ""}
+      <div><small>Fecha de emisión</small><b>${edFecha("fecha")}</b></div>
+      ${f.vencimiento ? `<div><small>Vencimiento</small><b>${edFecha("vencimiento")}</b></div>` : ""}
       ${f.periodo.desde || !f.resumen
         ? `<div><small>Periodo de servicio</small><b>${f.periodo.desde ? fecha(f.periodo.desde) + " – " + fecha(f.periodo.hasta) : "—"}</b></div>`
         : `<div><small>Concepto</small><b>${esc(f.resumen)}</b></div>`}
@@ -362,10 +381,12 @@ function sheet() {
       <div class="words"><span class="lbl">Importe en letra</span>${enLetra(t.total)}</div>
       <div class="totals">
         <div><span>Base imponible</span><span>${eur(t.base)}</span></div>
-        <div><span>IVA ${f.iva}%</span><span>${eur(t.iva)}</span></div>
-        <div class="t"><span>Total a pagar<small>IVA incluido</small></span><span>${eur(t.total)}</span></div>
+        <div><span>IVA ${f.iva}%</span><span>+ ${eur(t.iva)}</span></div>
+        ${t.irpf ? `<div><span>Retención IRPF ${f.irpf ?? IRPF_DEFECTO}%</span><span>− ${eur(t.irpf)}</span></div>` : ""}
+        <div class="t"><span>Total a pagar</span><span>${eur(t.total)}</span></div>
       </div>
     </div>
+    ${(f.irpf ?? IRPF_DEFECTO) == 7 ? `<p class="legal">${NOTA_IRPF}</p>` : ""}
     <div class="s-bottom">
       <div class="pay">
         <div><span class="lbl">Forma de pago</span><p>Transferencia bancaria${f.vencimiento ? ` antes del ${fecha(f.vencimiento)}` : ""}</p>
@@ -373,8 +394,7 @@ function sheet() {
           <p style="margin-top:2mm">Concepto: <b>Factura ${esc(f.numero)}</b></p></div>
         ${f.notas ? `<div><span class="lbl">Condiciones</span><p>${esc(f.notas)}</p></div>` : ""}
       </div>
-      <div class="thanks"><b>Gracias por confiar en Majosoft<i>.</i></b>
-        <span>Conforme al Reglamento (UE) 2016/679, sus datos se tratan únicamente para la gestión administrativa y contable de esta relación comercial.</span></div>
+      <div class="thanks"><b>Gracias por confiar en Majosoft<i>.</i></b></div>
       <div class="s-foot"><span>Majosoft · Estudio de desarrollo de software · majosoft.es</span><span>Factura ${esc(f.numero)} · Página 1 de 1</span></div>
     </div>`;
   document.title = `Factura ${f.numero} · ${f.cliente.nombre}`;
@@ -401,6 +421,35 @@ formEl.addEventListener("click", ev => {
   else if (ev.target.dataset.del != null) { cur.lineas.splice(+ev.target.dataset.del, 1); }
   else return;
   form(); sheet(); save();
+});
+
+const sheetEl = document.getElementById("sheet");
+const setPath = (p, v) => { const ks = p.split("."), last = ks.pop(); ks.reduce((o, k) => (o[k] ??= {}), cur)[last] = v; };
+sheetEl.addEventListener("keydown", ev => {
+  const el = ev.target.closest(".ed"); if (!el) return;
+  if (ev.key === "Enter" && !el.dataset.multi) { ev.preventDefault(); el.blur(); }
+});
+sheetEl.addEventListener("input", ev => {
+  const el = ev.target.closest(".ed"); if (!el || el.dataset.t === "fecha") return;
+  const v = el.innerText.replace(/\u00a0/g, " ").replace(/\n+$/, "").trim();
+  setPath(el.dataset.p, v);
+  // Sincroniza el campo equivalente del formulario y guarda
+  const f = formEl.querySelector(`[data-p="${el.dataset.p}"]`); if (f) f.value = v;
+  save();
+});
+sheetEl.addEventListener("focusout", ev => {
+  const el = ev.target.closest(".ed"); if (!el) return;
+  if (el.dataset.t === "fecha") {
+    const m = el.innerText.trim().match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})$/);
+    if (m) {
+      const y = m[3].length === 2 ? "20" + m[3] : m[3];
+      const iso = `${y}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+      if (!isNaN(new Date(iso + "T00:00"))) { setPath(el.dataset.p, iso); const f = formEl.querySelector(`[data-p="${el.dataset.p}"]`); if (f) f.value = iso; save(); }
+    } else if (!el.innerText.trim() && el.dataset.p === "vencimiento") { setPath("vencimiento", ""); save(); }
+    else toast("Escribe la fecha como dd/mm/aaaa", true);
+  }
+  // Repinta con los valores definitivos (fechas, número) salvo si se pasa a otro campo de la hoja
+  setTimeout(() => { if (!sheetEl.contains(document.activeElement)) sheet(); }, 0);
 });
 
 document.getElementById("rows").onclick = ev => { const tr = ev.target.closest("tr[data-id]"); if (tr) editar(tr.dataset.id); };
