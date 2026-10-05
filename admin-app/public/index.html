@@ -127,7 +127,7 @@ document.getElementById("lastBud").innerHTML = pre.length ? pre.slice(0, 6).map(
   : `<tr><td class="empty">Aún no hay presupuestos.</td></tr>`;
 document.querySelectorAll("tr[data-href]").forEach(tr => tr.onclick = () => location.href = tr.dataset.href);
 
-const EV = { login_ok: ["Inicio de sesión", "ok"], login_fail: ["Intento fallido", "bad"], account_locked: ["Cuenta bloqueada", "bad"], logout: ["Cierre de sesión", ""], "2fa_enabled": ["Verificación en dos pasos activada", "ok"], password_changed: ["Contraseña cambiada", "ok"], doc_created: ["Documento creado", ""], doc_deleted: ["Documento eliminado", ""], session_revoked: ["Sesión cerrada en otro dispositivo", ""], user_created: ["Usuario creado", ""], "2fa_reset": ["2FA reiniciada", "bad"] };
+const EV = { login_ok: ["Inicio de sesión", "ok"], login_fail: ["Intento fallido", "bad"], account_locked: ["Cuenta bloqueada", "bad"], logout: ["Cierre de sesión", ""], "2fa_enabled": ["Verificación en dos pasos activada", "ok"], password_changed: ["Contraseña cambiada", "ok"], doc_created: ["Documento creado", ""], doc_deleted: ["Documento eliminado", ""], session_revoked: ["Sesión cerrada en otro dispositivo", ""], user_created: ["Usuario creado", ""], "2fa_reset": ["2FA reiniciada", "bad"], "2fa_disabled": ["2FA desactivada", ""], mail_connected: ["Buzón de correo conectado", "ok"], mail_disconnected: ["Buzón de correo desconectado", ""] };
 const when = t => new Date(t).toLocaleString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 document.getElementById("activity").innerHTML = sec.audit.slice(0, 7).map(a => {
   const [label, cls] = EV[a.event] || [a.event, ""];

@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import QRCode from "qrcode";
 import { db, audit } from "./lib/db.js";
+import * as correo from "./lib/correo.js";
 import {
   verifyPassword, hashPassword, DUMMY_HASH, passwordProblems,
   newTotpSecret, verifyTotp, totpUri, newToken, sha256,
@@ -257,8 +258,31 @@ app.delete("/admin/api/docs/:kind/:id", (req, res) => {
   res.json({ ok: true });
 });
 
+/* ===== Correo (buzón IMAP) ===== */
+const wrap = fn => async (req, res) => {
+  try { await fn(req, res); }
+  catch (e) { res.status(e.status || 502).json({ error: e.status ? e.message : "No se pudo leer el buzón. Inténtalo de nuevo." }); if (!e.status) console.error("correo:", e.message); }
+};
+app.get("/admin/api/correo/estado", (req, res) => res.json(correo.estado()));
+app.post("/admin/api/correo/config", wrap(async (req, res) => {
+  await correo.guardar(req.body || {});
+  audit("mail_connected", { user: req.session.user, ip: req.ip, detail: String(req.body?.user || "") });
+  res.json(correo.estado());
+}));
+app.delete("/admin/api/correo/config", (req, res) => { correo.desconectar(); audit("mail_disconnected", { user: req.session.user, ip: req.ip }); res.json({ ok: true }); });
+app.get("/admin/api/correo/mensajes", wrap(async (req, res) => {
+  res.json(await correo.listar({ pagina: Math.max(1, +req.query.pagina || 1), buscar: String(req.query.q || "").slice(0, 100) }));
+}));
+app.get("/admin/api/correo/mensajes/:uid", wrap(async (req, res) => res.json(await correo.leer(+req.params.uid))));
+app.post("/admin/api/correo/mensajes/:uid/leido", wrap(async (req, res) => { await correo.marcar(+req.params.uid, !!req.body?.leido); res.json({ ok: true }); }));
+app.get("/admin/api/correo/mensajes/:uid/adjuntos/:i", wrap(async (req, res) => {
+  const a = await correo.adjunto(+req.params.uid, +req.params.i);
+  res.set({ "Content-Type": "application/octet-stream", "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(a.nombre)}` });
+  res.send(a.contenido);
+}));
+
 /* ===== Páginas privadas ===== */
-const PAGES = { "": "index.html", presupuestos: "presupuestos.html", facturas: "facturas.html", seguridad: "seguridad.html" };
+const PAGES = { "": "index.html", presupuestos: "presupuestos.html", facturas: "facturas.html", correo: "correo.html", seguridad: "seguridad.html" };
 app.get("/admin/panel.js", (req, res) => res.sendFile(path.join(PUBLIC, "panel.js")));
 app.get(["/admin", "/admin/:page"], (req, res, next) => {
   const f = PAGES[(req.params.page || "").replace(/\.html$/, "")];
