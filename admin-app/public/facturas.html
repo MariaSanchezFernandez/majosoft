@@ -378,7 +378,7 @@ function sheet() {
       <tbody>${f.lineas.map((l, i) => `<tr><td class="n">${String(i + 1).padStart(2, "0")}</td><td><b>${esc(l.concepto)}</b>${l.detalle ? `<small>${esc(l.detalle)}</small>` : ""}${f.periodo.desde ? `<small>Del ${fecha(f.periodo.desde)} al ${fecha(f.periodo.hasta)}</small>` : ""}</td><td class="r">${l.cantidad}</td><td class="r">${eur(l.precio)}</td><td class="r"><b>${eur(l.cantidad * l.precio)}</b></td></tr>`).join("")}</tbody>
     </table>
     <div class="sum">
-      <div class="words"><span class="lbl">Importe en letra</span>${enLetra(t.total)}</div>
+      <div></div>
       <div class="totals">
         <div><span>Base imponible</span><span>${eur(t.base)}</span></div>
         <div><span>IVA ${f.iva}%</span><span>+ ${eur(t.iva)}</span></div>
