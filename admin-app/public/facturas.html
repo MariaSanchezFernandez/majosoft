@@ -345,6 +345,7 @@ function form() {
       ${fld("IBAN para transferencia", "emisor.iban")}
     </section>
     <section class="sec"><h3>Notas de esta factura</h3>
+      <label class="f">Concepto de la transferencia<input type="text" data-p="conceptoPago" value="${esc(cur.conceptoPago || "")}" placeholder="Factura ${esc(cur.numero)}" /></label>
       ${fld("Condiciones / notas", "notas", "area")}
     </section>`;
 }
@@ -406,7 +407,7 @@ function sheet() {
         ${(f.irpf ?? IRPF_DEFECTO) == 7 ? `<p class="legal">${NOTA_IRPF}</p>` : ""}
         <div><span class="lbl">Forma de pago</span><p>Transferencia bancaria${f.vencimiento ? ` antes del ${fecha(f.vencimiento)}` : ""}</p>
           ${e.iban ? `<p class="iban" style="margin-top:2mm">${esc(e.iban)}</p>` : `<p style="margin-top:2mm;color:var(--muted)">IBAN pendiente de indicar</p>`}
-          <p style="margin-top:2mm">Concepto: <b>Factura ${esc(f.numero)}</b></p></div>
+          <p style="margin-top:2mm">Concepto: <b class="ed" contenteditable="plaintext-only" spellcheck="false" data-p="conceptoPago" data-ph="Factura ${esc(f.numero)}">${esc(f.conceptoPago || `Factura ${f.numero}`)}</b></p></div>
         ${f.notas ? `<div><span class="lbl">Condiciones</span><p>${esc(f.notas)}</p></div>` : ""}
       </div>
       <div class="thanks"><b>Gracias por confiar en Majosoft<i>.</i></b></div>
