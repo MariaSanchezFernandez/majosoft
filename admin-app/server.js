@@ -166,6 +166,22 @@ app.post("/admin/api/logout", (req, res) => {
   res.json({ ok: true });
 });
 
+/* ===== Formulario de contacto de la web (público) ===== */
+const contactos = new Map(); // ip -> marcas de tiempo recientes
+app.post("/api/contacto", (req, res) => {
+  const origin = req.get("origin");
+  if (origin && origin !== ORIGIN && origin !== ORIGIN.replace("://", "://www.")) return res.status(403).json({ ok: false });
+  const { nombre, email, mensaje, botcheck } = req.body || {};
+  if (botcheck) return res.json({ ok: true }); // bot: se descarta sin avisar
+  const n = String(nombre || "").trim().slice(0, 120), e = String(email || "").trim().slice(0, 200), m = String(mensaje || "").trim().slice(0, 5000);
+  if (!n || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) || !m) return res.status(400).json({ ok: false, error: "Faltan datos" });
+  const now = Date.now(), prev = (contactos.get(req.ip) || []).filter(t => now - t < 10 * 60e3);
+  if (prev.length >= 5) return res.status(429).json({ ok: false, error: "Demasiados mensajes seguidos" });
+  contactos.set(req.ip, [...prev, now]);
+  db.prepare("INSERT INTO mensajes (at, nombre, email, mensaje, ip) VALUES (?, ?, ?, ?, ?)").run(now, n, e, m, req.ip);
+  res.json({ ok: true });
+});
+
 /* ===== Páginas públicas del panel (solo el login) ===== */
 app.get("/admin/login", (req, res) => loadSession(req) ? res.redirect(302, "/admin/") : res.sendFile(path.join(PUBLIC, "login.html")));
 app.get("/admin/panel.css", (req, res) => res.sendFile(path.join(PUBLIC, "panel.css")));
@@ -258,6 +274,20 @@ app.delete("/admin/api/docs/:kind/:id", (req, res) => {
   res.json({ ok: true });
 });
 
+/* ===== Mensajes del formulario de la web ===== */
+app.get("/admin/api/mensajes", (req, res) => {
+  res.json(db.prepare("SELECT id, at, nombre, email, mensaje, origen, leido FROM mensajes ORDER BY id DESC LIMIT 500").all());
+});
+app.post("/admin/api/mensajes/:id/leido", (req, res) => {
+  db.prepare("UPDATE mensajes SET leido = ? WHERE id = ?").run(req.body?.leido ? 1 : 0, +req.params.id);
+  res.json({ ok: true });
+});
+app.delete("/admin/api/mensajes/:id", (req, res) => {
+  db.prepare("DELETE FROM mensajes WHERE id = ?").run(+req.params.id);
+  audit("message_deleted", { user: req.session.user, ip: req.ip, detail: "mensaje " + req.params.id });
+  res.json({ ok: true });
+});
+
 /* ===== Correo (buzón IMAP) ===== */
 const wrap = fn => async (req, res) => {
   try { await fn(req, res); }
@@ -282,7 +312,7 @@ app.get("/admin/api/correo/mensajes/:uid/adjuntos/:i", wrap(async (req, res) => 
 }));
 
 /* ===== Páginas privadas ===== */
-const PAGES = { "": "index.html", presupuestos: "presupuestos.html", facturas: "facturas.html", correo: "correo.html", seguridad: "seguridad.html" };
+const PAGES = { "": "index.html", presupuestos: "presupuestos.html", facturas: "facturas.html", correo: "correo.html", mensajes: "mensajes.html", seguridad: "seguridad.html" };
 app.get("/admin/panel.js", (req, res) => res.sendFile(path.join(PUBLIC, "panel.js")));
 app.get(["/admin", "/admin/:page"], (req, res, next) => {
   const f = PAGES[(req.params.page || "").replace(/\.html$/, "")];

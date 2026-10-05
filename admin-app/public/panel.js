@@ -3,6 +3,7 @@ const ICONS = {
   home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
   doc: '<path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M8 13h8M8 17h6"/>',
   invoice: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+  chat: '<path d="M4 5h16v11H8l-4 4z"/><path d="M8 9h8M8 12h5"/>',
   mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
   shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
   web: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
@@ -60,7 +61,7 @@ export async function mountShell(active) {
       <div class="side-sec">Comercial</div>
       <nav>${link("/admin/presupuestos", "presupuestos", "Presupuestos", "doc")}${link("/admin/facturas", "facturas", "Facturas", "invoice")}</nav>
       <div class="side-sec">Comunicación</div>
-      <nav>${link("/admin/correo", "correo", "Correo", "mail")}</nav>
+      <nav>${link("/admin/mensajes", "mensajes", "Mensajes web", "chat")}${link("/admin/correo", "correo", "Correo", "mail")}</nav>
       <div class="side-sec">Cuenta</div>
       <nav>${link("/admin/seguridad", "seguridad", "Seguridad", "shield")}<a href="/" target="_blank" rel="noopener">${icon("web")}Ver la web ↗</a></nav>
       <div class="side-user">

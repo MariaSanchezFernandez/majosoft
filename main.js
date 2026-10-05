@@ -291,6 +291,13 @@ if (form) {
     const WEB3FORMS_KEY = '2d43980a-87f0-4dca-9fb1-a1a9aeb0b9e3';
     if (!WEB3FORMS_KEY) { enviarPorCorreo(); return; }
 
+    // Copia en el panel de Majosoft (historial de mensajes); no bloquea el envío
+    fetch('/api/contacto', {
+      method: 'POST', keepalive: true,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre, email, mensaje, botcheck: data.get('botcheck') ? 1 : 0 }),
+    }).catch(() => {});
+
     const btn = form.querySelector('button[type="submit"]');
     status.textContent = 'Enviando…';
     if (btn) btn.disabled = true;

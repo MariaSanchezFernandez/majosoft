@@ -44,6 +44,17 @@ db.exec(`
     ip TEXT, detail TEXT
   );
 
+  CREATE TABLE IF NOT EXISTS mensajes (
+    id INTEGER PRIMARY KEY,
+    at INTEGER NOT NULL,
+    nombre TEXT NOT NULL,
+    email TEXT NOT NULL,
+    mensaje TEXT NOT NULL,
+    origen TEXT NOT NULL DEFAULT 'web',
+    ip TEXT,
+    leido INTEGER NOT NULL DEFAULT 0
+  );
+
   CREATE TABLE IF NOT EXISTS docs (
     kind TEXT NOT NULL,
     id TEXT NOT NULL,

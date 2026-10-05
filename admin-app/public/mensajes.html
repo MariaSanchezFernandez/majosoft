@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mensajes · Panel Majosoft</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/admin/panel.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: var(--cream); color: var(--ink); font-size: 14px; }
+    main { max-width: 1180px; padding: 34px 32px 60px; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 15px; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: var(--ink); font: inherit; font-weight: 700; font-size: 13px; cursor: pointer; text-decoration: none; }
+    .btn:hover { border-color: var(--ink); }
+    .btn--ink { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+    .btn--danger:hover { border-color: var(--bad); color: var(--bad); }
+    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+    .kpi { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; }
+    .kpi small { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .kpi b { display: block; font-size: 26px; letter-spacing: -.03em; margin-top: 6px; }
+    .kpi.dark { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+    .kpi.dark small { color: #a9a99c; } .kpi.dark b { color: var(--lime); }
+    .wrap { display: grid; grid-template-columns: 380px 1fr; gap: 14px; align-items: start; }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+    .card-tools { display: flex; gap: 8px; padding: 12px; border-bottom: 1px solid var(--line); }
+    .tabs { display: flex; gap: 4px; background: var(--cream); padding: 4px; border-radius: 10px; }
+    .tabs button { border: none; background: none; padding: 7px 11px; border-radius: 7px; font: inherit; font-size: 12.5px; font-weight: 700; color: var(--muted); cursor: pointer; }
+    .tabs button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(21,22,26,.1); }
+    .search { flex: 1; min-width: 0; padding: 8px 11px; border: 1px solid var(--line); border-radius: 10px; font: inherit; font-size: 13px; background: #fcfcf8; }
+    .list { max-height: calc(100vh - 290px); overflow-y: auto; }
+    .item { display: block; width: 100%; text-align: left; border: none; border-bottom: 1px solid #eeede5; background: #fff; padding: 13px 16px 13px 26px; cursor: pointer; font: inherit; color: inherit; position: relative; }
+    .item:hover { background: #fafaf5; }
+    .item.on { background: #f3f4dc; }
+    .item.unread::before { content: ""; position: absolute; left: 11px; top: 19px; width: 7px; height: 7px; border-radius: 50%; background: var(--lime2); }
+    .item .top { display: flex; justify-content: space-between; gap: 10px; }
+    .item .who { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item.unread .who { font-weight: 800; }
+    .item .date { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
+    .item .prev { color: var(--muted); font-size: 12.5px; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .empty { padding: 40px 20px; text-align: center; color: var(--muted); }
+    .detail { padding: 24px 26px; min-height: 300px; }
+    .detail .head { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; flex-wrap: wrap; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+    .detail .person { display: flex; gap: 12px; align-items: center; }
+    .detail .av { width: 42px; height: 42px; border-radius: 50%; background: var(--ink); color: var(--lime); display: grid; place-items: center; font-weight: 800; }
+    .detail h2 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
+    .detail .email { color: var(--muted); font-size: 13px; }
+    .detail .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+    .detail .meta { color: var(--muted); font-size: 12px; margin: 14px 0 10px; }
+    .detail .body { white-space: pre-wrap; line-height: 1.65; font-size: 14.5px; background: #fafaf5; border: 1px solid #eeede5; border-radius: 12px; padding: 18px; }
+    .placeholder { display: grid; place-items: center; color: var(--muted); min-height: 300px; text-align: center; }
+    @media (max-width: 1000px) { .wrap { grid-template-columns: 1fr; } .kpis { grid-template-columns: 1fr; } main { padding: 24px 16px 40px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="page-head"><div><div class="crumbs">Comunicación</div><h1>Mensajes de la web</h1><p>Historial de lo que os escriben desde el formulario de contacto de majosoft.es.</p></div></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="wrap">
+      <div class="card">
+        <div class="card-tools">
+          <div class="tabs" id="tabs"><button data-f="" class="on">Todos</button><button data-f="nuevos">Sin leer</button></div>
+          <input class="search" id="q" placeholder="Buscar" />
+        </div>
+        <div class="list" id="list"></div>
+      </div>
+      <div class="card" id="detail"><div class="placeholder">Selecciona un mensaje para leerlo.</div></div>
+    </div>
+  </main>
+<script type="module">
+import { mountShell, api, toast } from "/admin/panel.js";
+await mountShell("mensajes");
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const ini = s => String(s).trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("") || "?";
+const corta = t => { const d = new Date(t), h = new Date(); return d.toDateString() === h.toDateString() ? d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }) : d.toLocaleDateString("es-ES", { day: "numeric", month: "short", ...(d.getFullYear() !== h.getFullYear() ? { year: "numeric" } : {}) }); };
+const larga = t => new Date(t).toLocaleString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+
+let todos = [], filtro = "", actual = null;
+async function cargar() { todos = await api("mensajes"); pintar(); }
+function pintar() {
+  const mes = new Date(); mes.setDate(1); mes.setHours(0, 0, 0, 0);
+  $("kpis").innerHTML = `
+    <div class="kpi dark"><small>Sin leer</small><b>${todos.filter(m => !m.leido).length}</b></div>
+    <div class="kpi"><small>Este mes</small><b>${todos.filter(m => m.at >= +mes).length}</b></div>
+    <div class="kpi"><small>Total recibidos</small><b>${todos.length}</b></div>`;
+  const q = $("q").value.toLowerCase();
+  const lista = todos.filter(m => (filtro !== "nuevos" || !m.leido) && (!q || [m.nombre, m.email, m.mensaje].join(" ").toLowerCase().includes(q)));
+  $("list").innerHTML = lista.length ? lista.map(m => `
+    <button class="item ${m.leido ? "" : "unread"} ${m.id === actual ? "on" : ""}" data-id="${m.id}">
+      <div class="top"><span class="who">${esc(m.nombre)}</span><span class="date">${corta(m.at)}</span></div>
+      <div class="prev">${esc(m.mensaje)}</div>
+    </button>`).join("") : `<div class="empty">${todos.length ? "Ningún mensaje coincide." : "Aún no ha llegado ningún mensaje desde la web."}</div>`;
+}
+async function abrir(id) {
+  actual = id;
+  const m = todos.find(x => x.id === id); if (!m) return;
+  if (!m.leido) { m.leido = 1; api(`mensajes/${id}/leido`, { method: "POST", body: { leido: true } }); }
+  pintar();
+  const asunto = encodeURIComponent("Re: tu mensaje a Majosoft");
+  const cuerpo = encodeURIComponent(`Hola ${m.nombre.split(" ")[0]},\n\n\n\n—\nEn respuesta a tu mensaje del ${new Date(m.at).toLocaleDateString("es-ES")}:\n> ${m.mensaje.replace(/\n/g, "\n> ")}`);
+  $("detail").innerHTML = `<div class="detail">
+    <div class="head">
+      <div class="person"><div class="av">${esc(ini(m.nombre))}</div><div><h2>${esc(m.nombre)}</h2><div class="email">${esc(m.email)}</div></div></div>
+      <div class="acts">
+        <a class="btn btn--ink" href="mailto:${encodeURIComponent(m.email)}?subject=${asunto}&body=${cuerpo}">Responder</a>
+        <button class="btn" id="bUnread">Marcar no leído</button>
+        <button class="btn btn--danger" id="bDel">Eliminar</button>
+      </div>
+    </div>
+    <div class="meta">Recibido el ${larga(m.at)} · Formulario de majosoft.es</div>
+    <div class="body">${esc(m.mensaje)}</div>
+  </div>`;
+  $("bUnread").onclick = async () => { await api(`mensajes/${id}/leido`, { method: "POST", body: { leido: false } }); m.leido = 0; actual = null; pintar(); $("detail").innerHTML = `<div class="placeholder">Marcado como no leído.</div>`; };
+  $("bDel").onclick = async () => {
+    if (!confirm(`¿Eliminar el mensaje de ${m.nombre}?`)) return;
+    await api(`mensajes/${id}`, { method: "DELETE" }); todos = todos.filter(x => x.id !== id); actual = null; pintar();
+    $("detail").innerHTML = `<div class="placeholder">Mensaje eliminado.</div>`; toast("Mensaje eliminado");
+  };
+}
+$("list").onclick = e => { const b = e.target.closest(".item"); if (b) abrir(+b.dataset.id); };
+$("q").oninput = pintar;
+$("tabs").onclick = e => { const b = e.target.closest("[data-f]"); if (!b) return; filtro = b.dataset.f; document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b)); pintar(); };
+cargar();
+</script>
+</body>
+</html>
